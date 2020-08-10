@@ -1,0 +1,23 @@
+main: me.CoPokBl.unltimateuhc.Main
+name: UltimateUHC
+version: 4.1
+author: CoPokBl
+api-version: 1.13
+
+commands:
+   uhcstart:
+   uhcend:
+   uhcserverend: 
+   uhcinfo: 
+   scatter: 
+   uhchealth: 
+   uhcpvp: 
+   uhcsethealth: 
+   givehead: 
+   uhcstatus: 
+   uhcdebug: 
+   uhcscenario: 
+   uhcrespawn: 
+   uhcname: 
+   uhcjoin: 
+   uhcleave: 
