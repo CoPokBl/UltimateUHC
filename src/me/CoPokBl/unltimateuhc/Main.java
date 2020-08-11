@@ -277,6 +277,8 @@ public class Main extends JavaPlugin implements Listener{
 	        public void run() {
 				if (zombies == true) {
 					Player p = e.getPlayer();
+					Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run tp " + p.getName() + " 0 200 0");
+					p.addPotionEffect((new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 100, 255)));
 			        p.setGameMode(GameMode.ADVENTURE);
 				} else {
 					Player p = e.getPlayer();
@@ -284,7 +286,7 @@ public class Main extends JavaPlugin implements Listener{
 				}
 	        }
 		};
-		spec.runTaskLater(this, 20 * 2);
+		spec.runTaskLater(this, 20 * 1);
     }
 	
 	@EventHandler
