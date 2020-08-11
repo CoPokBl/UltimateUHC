@@ -91,9 +91,9 @@ public class Main extends JavaPlugin implements Listener{
 		onetable = false;
 		ifuhcdelete();
 		// has if because i want to add config
-		if (true) {
-			startloop();
-		}
+		//if (true) {
+		//	startloop();
+		//}
 		WorldCreator wc = new WorldCreator("uhc");
 		wc.environment(World.Environment.NORMAL);
 		wc.type(WorldType.NORMAL);
@@ -101,7 +101,7 @@ public class Main extends JavaPlugin implements Listener{
 		if (!(Bukkit.getOnlinePlayers().isEmpty())) 
 			for (Player online : Bukkit.getOnlinePlayers()) {
 				if (online.isOp()) {
-					online.sendMessage(ChatColor.RED + "Reloading the sevrer breaks UltimateUHC, restart server now!");
+					online.sendMessage(ChatColor.RED + "Reloading the server breaks UltimateUHC, restart server now!");
 					online.sendMessage(ChatColor.RED + "UltimateUHC is now disabling...");
 					getServer().getPluginManager().disablePlugin(this); 
 				}
