@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import jdk.nashorn.internal.ir.Block;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -19,15 +20,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
@@ -42,6 +39,7 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
+import org.bukkit.util.Vector;
 
 public class Main extends JavaPlugin implements Listener{
 	// hi adam
@@ -62,7 +60,7 @@ public class Main extends JavaPlugin implements Listener{
 	private final List<Player> alive = new ArrayList<>();
 	private final List<Player> hasmadetable = new ArrayList<>();
 	private int taskID;
-	private World world;
+	public static List<Player> noInteract = new ArrayList<>();
 
 	@Override
 	public void onEnable() {
@@ -98,6 +96,9 @@ public class Main extends JavaPlugin implements Listener{
 		wc.environment(World.Environment.NORMAL);
 		wc.type(WorldType.NORMAL);
 		wc.createWorld();
+		Bukkit.getWorld("uhc").getWorldBorder().setCenter(0, 0);
+		Bukkit.getWorld("uhc").getWorldBorder().setSize(500);
+		Bukkit.getWorld("uhc").setSpawnLocation(0,100, 0);
 		if (!(Bukkit.getOnlinePlayers().isEmpty())) 
 			for (Player online : Bukkit.getOnlinePlayers()) {
 				if (online.isOp()) {
@@ -121,13 +122,7 @@ public class Main extends JavaPlugin implements Listener{
 			}
 	}
 	
-	public static double getRandomnum(double min, double max){
-
-	    double x = (Math.random()*((max-min)+1))+min;
-
-	    return x;
-
-	}
+	public static double getRandomnum(double min, double max) { ((Player)Bukkit.getOnlinePlayers().toArray()[0]).sendMessage("" + (int)((Math.random()*((max-min)+1))+min)); return (int)((Math.random()*((max-min)+1))+min); }
 	
 	public void startloop() {
 		while(true) {
@@ -173,6 +168,27 @@ public class Main extends JavaPlugin implements Listener{
 	    acstart.runTaskLater(this, 20 * 5);
 	    return;
 	}
+
+	@EventHandler
+	public void onMove(PlayerMoveEvent e) {
+		if (noInteract.contains(e.getPlayer())) {
+			Location to = e.getTo();
+			Location from = e.getFrom();
+
+			to.setX(from.getX());
+			to.setZ(from.getZ());
+		}
+	}
+
+	@EventHandler
+	public void onBlockPlace(BlockPlaceEvent e) {
+		if (noInteract.contains(e.getPlayer())) e.setCancelled(true);
+	}
+
+	@EventHandler
+	public void onInteract(PlayerInteractEvent e) {
+		if (noInteract.contains(e.getPlayer())) e.setCancelled(true);
+	}
 	
 	public String t(String mes) {
 		return ChatColor.translateAlternateColorCodes('&', mes);
@@ -192,7 +208,7 @@ public class Main extends JavaPlugin implements Listener{
 		return;
 	}	
 	public void unloadWorld(World world) {
-	    this.world = Bukkit.getWorld("");
+		World world1 = Bukkit.getWorld("");
 	    if(!world.equals(null)) {
 	        Bukkit.getServer().unloadWorld(world, true);
 	    }
@@ -235,7 +251,8 @@ public class Main extends JavaPlugin implements Listener{
 			recipe.setIngredient('h', Material.PLAYER_HEAD);
 			
 			return recipe;
-		}
+	}
+
 	public ShapedRecipe getrarrows() {
 		ItemStack item = new ItemStack(Material.ARROW);
 		NamespacedKey key = new NamespacedKey(this, "arrow");
@@ -275,18 +292,17 @@ public class Main extends JavaPlugin implements Listener{
 		BukkitRunnable spec = new BukkitRunnable() {
 			@Override
 	        public void run() {
-				if (zombies == true) {
-					Player p = e.getPlayer();
-					Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run tp " + p.getName() + " 0 200 0");
-					p.addPotionEffect((new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 100, 255)));
+				Player p = e.getPlayer();
+				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run tp " + p.getName() + " 0 200 0");
+				if (zombies) {
+					p.addPotionEffect((new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 255)));
 			        p.setGameMode(GameMode.ADVENTURE);
 				} else {
-					Player p = e.getPlayer();
-			        p.setGameMode(GameMode.SPECTATOR);	
+					p.setGameMode(GameMode.SPECTATOR);
 				}
 	        }
 		};
-		spec.runTaskLater(this, 20 * 1);
+		spec.runTaskLater(this, 20);
     }
 	
 	@EventHandler
@@ -297,13 +313,18 @@ public class Main extends JavaPlugin implements Listener{
 	public void sendplayer(Player p) {
 		createscoreboard(p);
 		start(p);
-		if (ingame == false) {
+		if (!ingame) {
     		alive.add(p);
-        	p.addPotionEffect((new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 99999, 255)));
-        	p.addPotionEffect((new PotionEffect(PotionEffectType.BLINDNESS, 99999, 255)));
-        	p.addPotionEffect((new PotionEffect(PotionEffectType.SLOW, 99999, 255)));
-        	p.addPotionEffect((new PotionEffect(PotionEffectType.SLOW_DIGGING, 99999, 255)));
-        	Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run tp " + p.getName() + " " + getRandomnum(-250, 250) + " 200 " + getRandomnum(-250, 250));
+    		noInteract.add(p);
+			double wbsize = Bukkit.getWorld("uhc").getWorldBorder().getSize()/2;
+			Location loc = Bukkit.getWorld("uhc").getBlockAt((int) getRandomnum(-wbsize, wbsize), 200, (int) getRandomnum(-wbsize, wbsize)).getLocation();
+        	p.teleport(loc);
+			p.addPotionEffect((new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 99999, 255)));
+			p.addPotionEffect((new PotionEffect(PotionEffectType.BLINDNESS, 99999, 255)));
+			p.addPotionEffect((new PotionEffect(PotionEffectType.SLOW, 99999, 255)));
+			p.addPotionEffect((new PotionEffect(PotionEffectType.SLOW_DIGGING, 99999, 255)));
+			p.addPotionEffect((new PotionEffect(PotionEffectType.WATER_BREATHING, 99999, 255)));
+			// Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run tp " + p.getName() + " " + getRandomnum(-wbsize, wbsize) + " 200 " + getRandomnum(-wbsize, wbsize));
     	}
     	else {
     		Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run tp " + p.getName() + " 0 100 0");
@@ -314,8 +335,7 @@ public class Main extends JavaPlugin implements Listener{
 	
 	@EventHandler
 	public void onQuit(PlayerQuitEvent event) {
-		if (alive.contains(event.getPlayer()))
-			alive.remove(event.getPlayer());
+		alive.remove(event.getPlayer());
 		MainBoard board = new MainBoard(event.getPlayer().getUniqueId());
 		if (board.hasID())
 			board.stop();
@@ -325,7 +345,7 @@ public class Main extends JavaPlugin implements Listener{
 		taskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
 			
 			int count = 0;
-			MainBoard board = new MainBoard(player.getUniqueId());
+			final MainBoard board = new MainBoard(player.getUniqueId());
 			
 			@Override
 			public void run() {
@@ -388,14 +408,14 @@ public class Main extends JavaPlugin implements Listener{
 	@EventHandler
 	public void onPlayerDeath(PlayerDeathEvent e) {
 		alive.remove(e.getEntity().getPlayer());
-		if (alive.size() == 1 && ingame == true) {
+		if (alive.size() == 1 && ingame) {
 			// run win
 			final Player winner = alive.get(0);
 			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "tellraw @a {\"color\":\"green\",\"text\":\"" + winner.getName() + " has won the UHC!!!!\"}");
 			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "title " + winner.getName() + " title {\"color\":\"blue\", \"text\":\"You Have Won The UHC!\"}");
 			ingame = false;
 		}
-		Player p = (Player)e.getEntity().getPlayer();
+		Player p = e.getEntity().getPlayer();
 		p.getWorld().strikeLightningEffect(p.getLocation());
 		ItemStack head = new ItemStack(Material.PLAYER_HEAD);
 		World world = p.getWorld();
@@ -421,8 +441,14 @@ public class Main extends JavaPlugin implements Listener{
 	}
 	
 	 @EventHandler
-	    public void onBlockBreak(BlockBreakEvent event){
+	    public void onBlockBreak(BlockBreakEvent event) {
 		 Player p = event.getPlayer();
+
+		 if (noInteract.contains(p)) {
+		 	event.setCancelled(true);
+		 	return;
+		 }
+
 		 Location loc = event.getBlock().getLocation();
 		 int ran = 2;
 		 		if (halfores) {
@@ -494,7 +520,7 @@ public class Main extends JavaPlugin implements Listener{
 	
 	@EventHandler
     public void onTestEntityDamage(EntityDamageByEntityEvent event) {
-		if (pvp == false) {
+		if (!pvp) {
 	        if (event.getDamager() instanceof Player){
 	            if (event.getEntity() instanceof Player) {
 	                event.setCancelled(true);
@@ -504,8 +530,7 @@ public class Main extends JavaPlugin implements Listener{
         	if (doubledamage) {
         		if (event.getDamager() instanceof Player){
     	            if (event.getEntity() instanceof Player) {
-    	            	Player p = (Player) event.getEntity();
-    	            	p.damage(event.getDamage());
+    	            	event.setDamage(event.getDamage()*2);
     	            }
     	        }
         	}
@@ -523,6 +548,7 @@ public class Main extends JavaPlugin implements Listener{
             	ItemStack enderperl = new ItemStack(Material.ENDER_PEARL);
             	event.getPlayer().getInventory().addItem(enderperl);
             }
+            player.setVelocity(new Vector(0, 0, 0));
             player.teleport(event.getTo());
         }
     }
@@ -559,11 +585,11 @@ public class Main extends JavaPlugin implements Listener{
         }
 		if (chicken) {
 			player.setHealth(1);
-			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "give @a minecraft:enchanted_golden_apple 1");
+			ItemStack gap = new ItemStack(Material.ENCHANTED_GOLDEN_APPLE);
+			player.getInventory().addItem(gap);
 		}
 		ItemStack book = new ItemStack(Material.BOOK);
 		player.getInventory().addItem(book);
-		return;
 	}
 	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -579,10 +605,10 @@ public class Main extends JavaPlugin implements Listener{
 			}
 			ingame = true;
 			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run gamerule naturalRegeneration false");
-			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run difficulty peaceful");
 			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run worldborder center 0 0");
 			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run worldborder set 500");
 			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run effect clear @a");
+			noInteract.clear();
 			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "title @a title {\"color\":\"blue\", \"text\":\"The UHC Has Begun!\"}");
 			BukkitRunnable enablepvp = new BukkitRunnable() {
 				//pvp
@@ -615,7 +641,7 @@ public class Main extends JavaPlugin implements Listener{
 	        	@Override
 	            public void run() {
 	        		//skyhigh
-	        		if (skyhigh == true) {
+	        		if (skyhigh) {
 	        			for (Player targetp : Bukkit.getOnlinePlayers()) {
 	        				if (targetp.getLocation().getY() < 100) {
 	        					targetp.damage(1);
@@ -623,7 +649,7 @@ public class Main extends JavaPlugin implements Listener{
 	        			}
 	        		}
 	        		//fallout
-	        		if (fallout == true) {
+	        		if (fallout) {
 	        			for (Player targetp : Bukkit.getOnlinePlayers()) {
 	        				if (targetp.getLocation().getY() > 60) {
 	        					targetp.damage(1);
@@ -652,13 +678,10 @@ public class Main extends JavaPlugin implements Listener{
 				return true;
 			}
 			Player p = (Player) sender;
-			if (!alive.contains(p)) {
-				p.sendMessage(ChatColor.RED + "You Are Not In The Game!");
-				return true;
-			}
 			alive.remove(p);
-			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "mvtp " + p.getPlayer() + " world");
+			p.teleport(Bukkit.getWorld("world").getSpawnLocation());
 			return true;
+
 		}
 		
 		//debug
@@ -730,17 +753,21 @@ public class Main extends JavaPlugin implements Listener{
 		}
 		
 		if (label.equalsIgnoreCase("uhcend")) {
+			if (args.length < 2) {
+				sender.sendMessage(ChatColor.RED + "Usage: /uhcend <winner>");
+				return true;
+			}
 			if (!(args[1].equals("confirm"))) {
-				sender.sendMessage(ChatColor.RED + "This command is not needed because when there is one player left it will do it by itself, if you are sure you want to do this type /uhcend <player> confirm");
+				sender.sendMessage(ChatColor.RED + "This command is not needed because when there is one player left it will do it by itself, if you are sure you want to do this type /uhcend <winner> confirm");
 				return true;
 			}
+			Player target;
 			try {
-				Player target = Bukkit.getPlayer(args[0]);
+				target = Bukkit.getPlayer(args[0]);
 			} catch (Exception e) {
-				sender.sendMessage(ChatColor.RED + "That player does not exist!");
+				sender.sendMessage(ChatColor.RED + "That player does not exist! /uhcend <winner> confirm");
 				return true;
 			}
-			Player target = Bukkit.getPlayer(args[0]);
 			if (!(sender.hasPermission("uhc.end"))) {
 				sender.sendMessage(ChatColor.RED + "You Don't Have Permission To Do That!");
 				return false;
@@ -824,7 +851,8 @@ public class Main extends JavaPlugin implements Listener{
 			Player target = Bukkit.getPlayer(args[0]);
 			if (sender.hasPermission("uhc.scatter")) {
 				target.addPotionEffect((new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 100, 255)));
-				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run tp " + args[0] + " " + getRandomnum(-250, 250) + " 200 " + getRandomnum(-250, 250));
+				double wbsize = Bukkit.getWorld("uhc").getWorldBorder().getSize()/2;
+				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run tp " + args[0] + " " + getRandomnum(-wbsize, wbsize) + " 200 " + getRandomnum(-wbsize, wbsize));
 				sender.sendMessage(ChatColor.GREEN + "Scattered " + args[0]);
 				return true;
 			}
