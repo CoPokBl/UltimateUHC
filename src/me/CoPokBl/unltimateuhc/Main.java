@@ -36,7 +36,7 @@ public class Main extends JavaPlugin implements Listener {
 
 		// register commands
 		this.getCommand("uhcscenario").setExecutor(new Scenarios());
-		// this.getCommand("uhcscenario").setTabCompleter(new Scenarios());
+		this.getCommand("uhcscenario").setTabCompleter(new Scenarios());
 
 		this.getCommand("uhcstart").setExecutor(new NonTabCommands());
 		this.getCommand("uhcend").setExecutor(new NonTabCommands());
@@ -49,7 +49,6 @@ public class Main extends JavaPlugin implements Listener {
 		this.getCommand("givehead").setExecutor(new NonTabCommands());
 		this.getCommand("uhcstatus").setExecutor(new NonTabCommands());
 		this.getCommand("uhcdebug").setExecutor(new NonTabCommands());
-		this.getCommand("uhcscenario").setExecutor(new NonTabCommands());
 		this.getCommand("uhcrespawn").setExecutor(new NonTabCommands());
 		this.getCommand("uhcjoin").setExecutor(new NonTabCommands());
 		this.getCommand("uhcleave").setExecutor(new NonTabCommands());

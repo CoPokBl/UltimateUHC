@@ -244,7 +244,7 @@ public class NonTabCommands implements CommandExecutor {
                     sender.sendMessage(ChatColor.RED + "That player does not exist!");
                     return true;
                 }
-                Bukkit.dispatchCommand(sender, "scatter " + target.getName());
+                Bukkit.dispatchCommand(sender, "uhcscatter " + target.getName());
                 gameManager.AlivePlayers.remove(target);
                 gameManager.AlivePlayers.add(target);
                 gameManager.SetupPlayer(target);

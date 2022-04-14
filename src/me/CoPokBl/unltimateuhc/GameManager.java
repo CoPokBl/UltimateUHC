@@ -77,6 +77,24 @@ public class GameManager {
             SetupPlayer(online);
         }
         InGame = true;
+        World uhc = Bukkit.getWorld("uhc");
+        if (uhc == null) {
+            // um wtf
+            Bukkit.getLogger().severe(
+                    "Uhc world is null, failed to start uhc. Please restart the server. " +
+                         "If this error persists, contact CoPokBl#9451 on Discord.");
+            return;
+        }
+        uhc.setGameRule(GameRule.NATURAL_REGENERATION, false);
+        uhc.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true);
+        uhc.getWorldBorder().setCenter(new Location(uhc, 0, 100, 0));
+        uhc.getWorldBorder().setSize(500);
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            online.getActivePotionEffects().clear();
+            online.setMaxHealth(20);
+            online.setHealth(20);
+            online.setFoodLevel(20);
+        }
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run gamerule naturalRegeneration false");
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run worldborder center 0 0");
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run worldborder set 500");

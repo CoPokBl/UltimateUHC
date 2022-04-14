@@ -8,6 +8,8 @@ import org.bukkit.scheduler.BukkitScheduler;
 
 public class SkyHigh extends Scenario {
 
+    public String name = "SkyHigh";
+
     @Override
     public void UhcStart() {
         BukkitScheduler scheduler = Bukkit.getScheduler();

@@ -12,6 +12,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class Zombies extends ScenarioListener {
 
+    public String name = "Zombies";
+
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent e) {
         Player p = e.getPlayer();

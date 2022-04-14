@@ -13,6 +13,8 @@ import static me.CoPokBl.unltimateuhc.Utils.GetRandomNum;
 
 public class Stacked extends ScenarioListener {
 
+    public String name = "Stacked";
+
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Player p = event.getPlayer();

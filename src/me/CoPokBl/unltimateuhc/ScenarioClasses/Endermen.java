@@ -9,6 +9,8 @@ import org.bukkit.inventory.ItemStack;
 
 public class Endermen extends ScenarioListener {
 
+    public String name = "Endermen";
+
     @Override
     public void SetupPlayer(Player player) {
         player.getInventory().addItem(new ItemStack(Material.ENDER_PEARL));

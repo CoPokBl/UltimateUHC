@@ -11,7 +11,7 @@ import org.bukkit.scoreboard.Scoreboard;
 
 public class ScoreboardManager {
     private int taskID;
-    public String UhcName;
+    public String UhcName = "UHC";
 
     public void start(Player player) {
         taskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Main.plugin, new Runnable() {

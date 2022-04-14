@@ -8,6 +8,8 @@ import org.bukkit.scheduler.BukkitScheduler;
 
 public class Fallout extends ScenarioListener {
 
+    public String name = "Fallout";
+
     @Override
     public void UhcStart() {
         BukkitScheduler scheduler = Bukkit.getServer().getScheduler();

@@ -11,6 +11,8 @@ import org.bukkit.inventory.ItemStack;
 
 public class GoldenPlayers extends ScenarioListener {
 
+    public String name = "Golden Players";
+
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         if (event.getBlock().getType().equals(Material.DIAMOND_ORE))
