@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="ultimateuhc:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/ultimateuhc_jar</output-path>
+    <root id="archive" name="ultimateuhc.jar">
+      <element id="module-output" name="ultimateuhc" />
+    </root>
+  </artifact>
+</component>

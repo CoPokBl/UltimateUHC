@@ -1,4 +1,4 @@
-package me.CoPokBl.unltimateuhc;
+package me.CoPokBl.unltimateuhc.Scoreboard;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,7 +8,7 @@ import org.bukkit.Bukkit;
 
 public class MainBoard {
 	
-	private static Map<UUID, Integer> TASKS = new HashMap<UUID, Integer>();
+	private static final Map<UUID, Integer> TASKS = new HashMap<UUID, Integer>();
 	private final UUID uuid;
 	
 	public MainBoard(UUID uuid) {

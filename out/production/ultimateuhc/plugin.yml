@@ -7,9 +7,9 @@ api-version: 1.13
 commands:
    uhcstart:
    uhcend:
-   uhcserverend: 
+   uhcserverend:
    uhcinfo: 
-   scatter: 
+   uhcscatter:
    uhchealth: 
    uhcpvp: 
    uhcsethealth: 
