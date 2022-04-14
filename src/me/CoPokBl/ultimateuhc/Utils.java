@@ -19,7 +19,7 @@ public class Utils {
             posy--;
         }
         posy++;
-        return new Location(world, x, posy, z);
+        return new Location(world, x+0.5, posy, z+0.5);
     }
 
     public static int GetVersion() {
