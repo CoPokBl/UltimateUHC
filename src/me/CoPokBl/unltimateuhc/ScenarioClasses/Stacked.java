@@ -13,7 +13,10 @@ import static me.CoPokBl.unltimateuhc.Utils.GetRandomNum;
 
 public class Stacked extends ScenarioListener {
 
-    public String name = "Stacked";
+    @Override
+    public String GetName() {
+        return "Stacked";
+    }
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {

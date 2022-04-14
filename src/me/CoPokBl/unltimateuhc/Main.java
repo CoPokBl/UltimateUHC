@@ -16,6 +16,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.IOException;
+
 public class Main extends JavaPlugin implements Listener {
 	public static int SpigotVersion;
 	public static Main plugin;
@@ -28,6 +30,18 @@ public class Main extends JavaPlugin implements Listener {
 		plugin = this;
 		gameManager = new GameManager();
 		scoreboardManager = new ScoreboardManager();
+
+		if (!getConfig().isSet("secondsToPvp")) {
+			try {
+				getConfig().save("config.yml");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		// set config values
+		gameManager.TimeToPvp = getConfig().getInt("secondsToPvp");
+		gameManager.TimeToMeetup = getConfig().getInt("secondsToMeetup");
 
 		// Get spigot version
 		SpigotVersion = Utils.GetVersion();
@@ -53,6 +67,8 @@ public class Main extends JavaPlugin implements Listener {
 		this.getCommand("uhcjoin").setExecutor(new NonTabCommands());
 		this.getCommand("uhcleave").setExecutor(new NonTabCommands());
 		this.getCommand("uhcname").setExecutor(new NonTabCommands());
+		this.getCommand("uhclistscenarios").setExecutor(new NonTabCommands());
+		this.getCommand("uhcaddtime").setExecutor(new NonTabCommands());
 
 		// register events
 		Bukkit.getServer().getPluginManager().registerEvents(this, this);

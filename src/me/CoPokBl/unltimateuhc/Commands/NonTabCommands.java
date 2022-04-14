@@ -1,5 +1,6 @@
 package me.CoPokBl.unltimateuhc.Commands;
 
+import me.CoPokBl.unltimateuhc.Interfaces.Scenario;
 import me.CoPokBl.unltimateuhc.Main;
 import me.CoPokBl.unltimateuhc.Utils;
 import org.bukkit.*;
@@ -61,6 +62,26 @@ public class NonTabCommands implements CommandExecutor {
                 return true;
             if (args[0].equalsIgnoreCase("addalive")) {
                 gameManager.AlivePlayers.add(Bukkit.getPlayer(args[1]));
+            }
+        }
+
+        if (label.equalsIgnoreCase("uhclistscenarios")) {
+            sender.sendMessage(ChatColor.GOLD + "Scenarios: ");
+            for (Scenario scenario : gameManager.Scenarios) {
+                sender.sendMessage("- " + ChatColor.GREEN + scenario.GetName());
+            }
+        }
+
+        if (label.equalsIgnoreCase("uhcaddtime")) {
+            if (!(sender.hasPermission("uhc.addtime"))) {
+                sender.sendMessage(ChatColor.RED + "You Don't Have Permission To Do That!");
+                return false;
+            }
+            try {
+                gameManager.gameLoopTimer += Integer.parseInt(args[0]);
+            } catch (Exception e) {
+                sender.sendMessage(ChatColor.RED + "Invalid Number!");
+                return false;
             }
         }
 

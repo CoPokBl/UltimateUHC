@@ -9,7 +9,10 @@ import static me.CoPokBl.unltimateuhc.Utils.GetRandomNum;
 
 public class HalfOres extends ScenarioListener {
 
-    public String name = "HalfOres";
+    @Override
+    public String GetName() {
+        return "HalfOres";
+    }
 
     @EventHandler(priority = EventPriority.LOW)
     public void onBlockBreak(BlockBreakEvent event) {

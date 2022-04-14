@@ -38,7 +38,7 @@ public class Utils {
 
     public static boolean ContainsScenario(List<Scenario> scenarios, Scenario scenario) {
         for (Scenario s : scenarios) {
-            if (Objects.equals(s.name, scenario.name)) return true;
+            if (Objects.equals(s.GetName(), scenario.GetName())) return true;
         }
         return false;
     }
@@ -46,7 +46,7 @@ public class Utils {
     public static int GetIndexOfScenario(List<Scenario> scenarios, Scenario scenario) {
         for (int i = 0; i < scenarios.size(); i++) {
             Scenario s = scenarios.get(i);
-            if (Objects.equals(s.name, scenario.name)) return i;
+            if (Objects.equals(s.GetName(), scenario.GetName())) return i;
         }
         return -1;
     }

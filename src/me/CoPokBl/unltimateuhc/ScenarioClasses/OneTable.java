@@ -13,7 +13,10 @@ import java.util.List;
 
 public class OneTable extends ScenarioListener {
 
-    public String name = "OneTable";
+    @Override
+    public String GetName() {
+        return "OneTable";
+    }
 
     private final List<Player> hasMadeTable = new ArrayList<>();
 

@@ -1,6 +1,7 @@
 package me.CoPokBl.unltimateuhc.ScenarioClasses;
 
 import me.CoPokBl.unltimateuhc.Interfaces.ScenarioListener;
+import me.CoPokBl.unltimateuhc.Interfaces.UhcEventType;
 import me.CoPokBl.unltimateuhc.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -8,10 +9,16 @@ import org.bukkit.scheduler.BukkitScheduler;
 
 public class Fallout extends ScenarioListener {
 
-    public String name = "Fallout";
+    @Override
+    public String GetName() {
+        return "Fallout";
+    }
 
     @Override
-    public void UhcStart() {
+    public void UhcEvent(UhcEventType eventType) {
+        if (eventType != UhcEventType.Meetup) {
+            return;
+        }
         BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
         scheduler.scheduleSyncRepeatingTask(Main.plugin, () -> {
             for (Player targetPlayer : Bukkit.getOnlinePlayers()) {
@@ -19,7 +26,7 @@ public class Fallout extends ScenarioListener {
                     targetPlayer.damage(1);
                 }
             }
-        }, 38000L, 40L);
+        }, 0, 40L);
     }
 
 }

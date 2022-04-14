@@ -20,4 +20,6 @@ commands:
    uhcrespawn: 
    uhcname: 
    uhcjoin: 
-   uhcleave: 
+   uhcleave:
+   uhclistscenarios:
+   uhcaddtime:

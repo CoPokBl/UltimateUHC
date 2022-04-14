@@ -2,15 +2,18 @@ package me.CoPokBl.unltimateuhc;
 
 import me.CoPokBl.unltimateuhc.EventListeners.WorldProtections;
 import me.CoPokBl.unltimateuhc.Interfaces.Scenario;
+import me.CoPokBl.unltimateuhc.Interfaces.UhcEventType;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static me.CoPokBl.unltimateuhc.Main.scoreboardManager;
 import static me.CoPokBl.unltimateuhc.Utils.GetRandomNum;
@@ -21,6 +24,9 @@ public class GameManager {
     public Boolean PvpEnabled = false;
     public Boolean InGame = false;
     public Boolean MeetupEnabled = false;
+    public int gameLoopTimer = 0;
+    public int TimeToMeetup;
+    public int TimeToPvp;
 
     public void SendPlayer(Player p) {
         scoreboardManager.CreateScoreboard(p);
@@ -90,45 +96,57 @@ public class GameManager {
         uhc.getWorldBorder().setCenter(new Location(uhc, 0, 100, 0));
         uhc.getWorldBorder().setSize(500);
         for (Player online : Bukkit.getOnlinePlayers()) {
-            online.getActivePotionEffects().clear();
+            for (PotionEffect effect : online.getActivePotionEffects()) {
+                online.removePotionEffect(effect.getType());
+            }
             online.setMaxHealth(20);
             online.setHealth(20);
             online.setFoodLevel(20);
+
+            // display title to all players
+            online.sendTitle(ChatColor.GREEN + "The UHC Has Begun!", ChatColor.GREEN + "", 10, 20*3, 10);
         }
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run gamerule naturalRegeneration false");
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run worldborder center 0 0");
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run worldborder set 500");
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run effect clear @a");
         WorldProtections.NoInteract.clear();
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "title @a title {\"color\":\"blue\", \"text\":\"The UHC Has Begun!\"}");
-        BukkitRunnable enablePvp = new BukkitRunnable() {
-            //pvp
-            @Override
-            public void run() {
-                PvpEnabled = true;
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "title @a title {\"color\":\"red\", \"text\":\"PVP is Now Enabled!\"}");
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run worldborder set 20 1800");
-
-            }
-        };
-        // Run the task on this plugin in 3 seconds (60 ticks)
-        enablePvp.runTaskLater(Main.plugin, 20 * 600);
-
-        BukkitRunnable meetup = new BukkitRunnable() {
-            //meetup
-            @Override
-            public void run() {
-                MeetupEnabled = true;
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "title @a subtitle {\"text\":\"Goto 0, 0! You Must Stay Above Ground!\"}");
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "title @a title {\"text\":\"It Is Now Meetup!\",\"color\":\"dark_red\"}");
-
-            }
-        };
-        meetup.runTaskLater(Main.plugin, 20 * 1900);
+        StartGameLoop();
 
         for (Scenario scenario : Scenarios) {
             scenario.UhcStart();
         }
+    }
+
+    private void StartGameLoop() {
+        BukkitScheduler scheduler = Bukkit.getScheduler();
+        scheduler.scheduleSyncRepeatingTask(Main.plugin, () -> {
+
+            // runs every 1 seconds
+            gameLoopTimer++;
+
+            if (gameLoopTimer >= Main.plugin.getConfig().getInt("secondsToPvp") && !PvpEnabled) {
+                // pvp
+                PvpEnabled = true;
+                World uhc = Bukkit.getWorld("uhc");
+                uhc.getWorldBorder().setSize(20, 1800);
+                for (Player online : Bukkit.getOnlinePlayers()) {
+                    online.sendTitle(ChatColor.RED + "PVP is Now Enabled!", ChatColor.GREEN + "", 10, 20*3, 10);
+                }
+
+                for (Scenario scenario : Scenarios) {
+                    scenario.UhcEvent(UhcEventType.Pvp);
+                }
+            } else if (gameLoopTimer >= Main.plugin.getConfig().getInt("secondsToMeetup") && !MeetupEnabled) {
+                // meetup
+                MeetupEnabled = true;
+                for (Player online : Bukkit.getOnlinePlayers()) {
+                    online.sendTitle(ChatColor.RED + "It Is Now Meetup!",  "Goto 0, 0! You Must Stay Above Ground!", 10, 20*3, 10);
+                }
+
+                for (Scenario scenario : Scenarios) {
+                    scenario.UhcEvent(UhcEventType.Meetup);
+                }
+            }
+
+
+        }, 0, 20);
     }
 
 }

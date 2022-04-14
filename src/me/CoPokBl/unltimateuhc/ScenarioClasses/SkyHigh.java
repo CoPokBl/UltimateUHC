@@ -1,6 +1,7 @@
 package me.CoPokBl.unltimateuhc.ScenarioClasses;
 
 import me.CoPokBl.unltimateuhc.Interfaces.Scenario;
+import me.CoPokBl.unltimateuhc.Interfaces.UhcEventType;
 import me.CoPokBl.unltimateuhc.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -8,10 +9,21 @@ import org.bukkit.scheduler.BukkitScheduler;
 
 public class SkyHigh extends Scenario {
 
-    public String name = "SkyHigh";
+    @Override
+    public String GetName() {
+        return "SkyHigh";
+    }
 
     @Override
     public void UhcStart() {
+
+    }
+
+    @Override
+    public void UhcEvent(UhcEventType eventType) {
+        if (eventType != UhcEventType.Meetup) {
+            return;
+        }
         BukkitScheduler scheduler = Bukkit.getScheduler();
         scheduler.scheduleSyncRepeatingTask(Main.plugin, () -> {
 
@@ -22,7 +34,7 @@ public class SkyHigh extends Scenario {
                 }
             }
 
-        }, 38000L, 40L);
+        }, 0, 40L);
     }
 
 }

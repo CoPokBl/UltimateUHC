@@ -58,10 +58,22 @@ public class ScoreboardManager {
         Score border = obj.getScore(ChatColor.YELLOW + "WorldBorder: " + (int) player.getWorld().getWorldBorder().getSize());
         border.setScore(6);
         // pvp
-        Score pvpstatus = obj.getScore(ChatColor.YELLOW + "PVP: " + Main.gameManager.PvpEnabled);
+        String pvpValue;
+        if (Main.gameManager.PvpEnabled) {
+            pvpValue = "Enabled";
+        } else {
+            pvpValue = "Enabling in " + (Main.gameManager.TimeToPvp - Main.gameManager.gameLoopTimer) + " seconds";
+        }
+        Score pvpstatus = obj.getScore(ChatColor.YELLOW + "PVP: " + pvpValue);
         pvpstatus.setScore(5);
         //meetup
-        Score meetupstatus = obj.getScore(ChatColor.YELLOW + "Meetup: " + Main.gameManager.MeetupEnabled);
+        String meetupValue;
+        if (Main.gameManager.MeetupEnabled) {
+            meetupValue = "Enabled";
+        } else {
+            meetupValue = "Enabling in " + (Main.gameManager.TimeToMeetup - Main.gameManager.gameLoopTimer) + " seconds";
+        }
+        Score meetupstatus = obj.getScore(ChatColor.YELLOW + "Meetup: " + meetupValue);
         meetupstatus.setScore(4);
         // dead or alive
         if (Main.gameManager.AlivePlayers.contains(player)) {

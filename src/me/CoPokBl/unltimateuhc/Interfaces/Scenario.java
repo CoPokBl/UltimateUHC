@@ -3,7 +3,10 @@ package me.CoPokBl.unltimateuhc.Interfaces;
 import org.bukkit.entity.Player;
 
 public class Scenario {
-    public String name;
+
+    public String GetName() {
+        return "";
+    }
 
     public void Enable() { }
 
@@ -14,5 +17,7 @@ public class Scenario {
     public void UhcFinish() { }
 
     public void SetupPlayer(Player p) { }
+
+    public void UhcEvent(UhcEventType eventType) {}
 
 }

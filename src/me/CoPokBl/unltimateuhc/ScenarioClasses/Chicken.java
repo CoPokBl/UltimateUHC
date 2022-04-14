@@ -7,7 +7,10 @@ import org.bukkit.inventory.ItemStack;
 
 public class Chicken extends Scenario {
 
-    public String name = "Chicken";
+    @Override
+    public String GetName() {
+        return "Chicken";
+    }
 
     @Override
     public void SetupPlayer(Player player) {

@@ -11,7 +11,10 @@ import org.bukkit.inventory.ItemStack;
 
 public class GoldenPlayers extends ScenarioListener {
 
-    public String name = "Golden Players";
+    @Override
+    public String GetName() {
+        return "GoldenPlayers";
+    }
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {

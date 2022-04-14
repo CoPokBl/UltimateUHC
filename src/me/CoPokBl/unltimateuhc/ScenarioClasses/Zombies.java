@@ -12,7 +12,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class Zombies extends ScenarioListener {
 
-    public String name = "Zombies";
+    @Override
+    public String GetName() {
+        return "Zombies";
+    }
 
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent e) {

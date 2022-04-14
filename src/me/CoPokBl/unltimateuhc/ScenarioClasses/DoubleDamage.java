@@ -7,7 +7,10 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
 public class DoubleDamage extends ScenarioListener {
 
-    public String name = "DoubleDamage";
+    @Override
+    public String GetName() {
+        return "DoubleDamage";
+    }
     @EventHandler
     public void onEntityDamage(EntityDamageByEntityEvent event) {
         if (!(event.getDamager() instanceof Player)) { return; }
