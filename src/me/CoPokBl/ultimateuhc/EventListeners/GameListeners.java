@@ -4,15 +4,13 @@ import me.CoPokBl.ultimateuhc.Main;
 import me.CoPokBl.ultimateuhc.Scoreboard.MainBoard;
 import me.CoPokBl.ultimateuhc.ScenarioClasses.Zombies;
 import me.CoPokBl.ultimateuhc.Utils;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -26,15 +24,23 @@ import static me.CoPokBl.ultimateuhc.Main.gameManager;
 public class GameListeners implements Listener {
 
     @EventHandler
+    public void onJoin(PlayerJoinEvent e) {
+        if (!Main.plugin.getConfig().getBoolean("sendPlayersOnJoin")) {
+            // Don't auto join them
+            return;
+        }
+        gameManager.SendPlayer(e.getPlayer());  // It will deal with them
+    }
+
+    @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent e) {
         BukkitRunnable spec = new BukkitRunnable() {
             @Override
             public void run() {
                 Player p = e.getPlayer();
-                World uhc = Bukkit.getWorld("uhc");
+                World uhc = Bukkit.getWorld(gameManager.WorldName);
                 assert uhc != null;
                 p.teleport(Utils.GetTopLocation(uhc, 0, 0));
-                // Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute in minecraft:uhc run tp " + p.getName() + " 0 200 0");
                 if (!gameManager.Scenarios.contains(new Zombies())) {
                     p.setGameMode(GameMode.SPECTATOR);
                 }
@@ -45,7 +51,10 @@ public class GameListeners implements Listener {
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        gameManager.AlivePlayers.remove(event.getPlayer());
+        if (gameManager.AlivePlayers.contains(event.getPlayer())) {
+            gameManager.AlivePlayers.remove(event.getPlayer());
+            event.getPlayer().setHealth(0);  // Kill them
+        }
         MainBoard board = new MainBoard(event.getPlayer().getUniqueId());
         if (board.hasID())
             board.stop();
@@ -58,9 +67,22 @@ public class GameListeners implements Listener {
         if (gameManager.AlivePlayers.size() == 1 && gameManager.InGame) {
             // run win
             final Player winner = gameManager.AlivePlayers.get(0);
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "tellraw @a {\"color\":\"green\",\"text\":\"" + winner.getName() + " has won the UHC!!!!\"}");
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "title " + winner.getName() + " title {\"color\":\"blue\", \"text\":\"You Have Won The UHC!\"}");
+            Bukkit.broadcastMessage(ChatColor.GREEN + winner.getDisplayName() + " has won the UHC!!!!");
+            winner.sendTitle(ChatColor.RED + "You Have Won The UHC!",  "", 10, 20*5, 10);
             gameManager.InGame = false;
+            if (Main.plugin.getConfig().getBoolean("restartServerOnCompletion")) {
+                int secondsToRestart = Main.plugin.getConfig().getInt("restartServerTime");
+                gameManager.ShutdownOnGameEndTaskId = Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, () -> {
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), Main.plugin.getConfig().getString("restartCommand"));
+                }, 20L * secondsToRestart);
+                Bukkit.broadcastMessage(ChatColor.RED + "The server will restart in " + secondsToRestart + " seconds!");
+                // tell all the operators to type /uhccancelrestart to cancel the restart
+                Bukkit.getOnlinePlayers().forEach(player -> {
+                    if (player.isOp()) {
+                        player.sendMessage(ChatColor.RED + "Type /uhccancelrestart to cancel the restart");
+                    }
+                });
+            }
         }
         Player p = e.getEntity().getPlayer();
         p.getWorld().strikeLightningEffect(p.getLocation());

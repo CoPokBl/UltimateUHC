@@ -18,13 +18,22 @@ public class CustomDrops implements Listener {
 
         if (!e.isDropItems()) return;
 
-        Material block = e.getBlock().getType();
-        if (block.equals(Material.OAK_LEAVES) || block.equals(Material.SPRUCE_LEAVES) || block.equals(Material.DARK_OAK_LEAVES) || block.equals(Material.BIRCH_LEAVES) || block.equals(Material.ACACIA_LEAVES) || block.equals(Material.JUNGLE_LEAVES)) {
-            Player player = e.getPlayer();
-            World world = player.getWorld();
-            ItemStack apple = new ItemStack(Material.APPLE);
-            world.dropItemNaturally(e.getBlock().getLocation(), apple);
+        if (Main.plugin.getConfig().getBoolean("enableAppleDrop")) {
+            Material block = e.getBlock().getType();
+            if (block.equals(Material.OAK_LEAVES) ||
+                    block.equals(Material.SPRUCE_LEAVES) ||
+                    block.equals(Material.DARK_OAK_LEAVES) ||
+                    block.equals(Material.BIRCH_LEAVES) ||
+                    block.equals(Material.ACACIA_LEAVES) ||
+                    block.equals(Material.JUNGLE_LEAVES)) {
+                Player player = e.getPlayer();
+                World world = player.getWorld();
+                ItemStack apple = new ItemStack(Material.APPLE);
+                world.dropItemNaturally(e.getBlock().getLocation(), apple);
+            }
         }
+
+        if (!Main.plugin.getConfig().getBoolean("smeltOresAndFood")) return;
 
         // auto smelt
         if (e.getBlock().getType().equals(Material.IRON_ORE)) {

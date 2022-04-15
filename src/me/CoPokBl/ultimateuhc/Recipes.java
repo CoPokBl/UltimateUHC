@@ -13,11 +13,13 @@ public class Recipes {
     public Recipes() { }
 
     public void registerRecipes() {
-        Bukkit.addRecipe(getArrowRecipe());
+        if (Main.plugin.getConfig().getBoolean("enableGravelToArrow")) { Bukkit.addRecipe(getArrowRecipe()); }
+        if (Main.plugin.getConfig().getBoolean("enable4WoolToString")) {
+            Bukkit.addRecipe(getStringRecipeWhite());
+            Bukkit.addRecipe(getStringRecipeBlack());
+            Bukkit.addRecipe(getStringRecipeBrown());
+        }
         Bukkit.addRecipe(getHeadRecipe());
-        Bukkit.addRecipe(getStringRecipeWhite());
-        Bukkit.addRecipe(getStringRecipeBlack());
-        Bukkit.addRecipe(getStringRecipeBrown());
     }
 
     private ShapedRecipe getHeadRecipe() {

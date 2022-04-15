@@ -50,4 +50,14 @@ public class Utils {
         return -1;
     }
 
+    // seconds to hours minutes seconds
+    public static String GetTime(int seconds) {
+        int hours = seconds / 3600;
+        int minutes = (seconds % 3600) / 60;
+        seconds = seconds % 60;
+        if (hours > 0) return hours + "h " + minutes + "m " + seconds + "s";
+        else if (minutes > 0) return minutes + "m " + seconds + "s";
+        else return seconds + "s";
+    }
+
 }

@@ -12,9 +12,28 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Scenarios implements CommandExecutor, TabCompleter {
+
+	private static final Map<String, Scenario> scenarios = new HashMap<>();
+
+	static {
+		scenarios.put("skyhigh", new SkyHigh());
+		scenarios.put("zombies", new Zombies());
+		scenarios.put("halfores", new HalfOres());
+		scenarios.put("goldenplayers", new GoldenPlayers());
+		scenarios.put("chicken", new Chicken());
+		scenarios.put("enderman", new Endermen());
+		scenarios.put("stacked", new Stacked());
+		scenarios.put("fallout", new Fallout());
+		scenarios.put("doubledamage", new DoubleDamage());
+		scenarios.put("onetable", new OneTable());
+		scenarios.put("noclean", new NoClean());
+		scenarios.put("nofall", new NoFall());
+	}
 
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 
@@ -33,23 +52,12 @@ public class Scenarios implements CommandExecutor, TabCompleter {
 			return true;
 		}
 
-		Scenario scenario = null;
+		Scenario scenario;
 
-		switch (args[0].toLowerCase()) {
-			case "skyhigh" -> scenario = new SkyHigh();
-			case "zombies" -> scenario = new Zombies();
-			case "halfores" -> scenario = new HalfOres();
-			case "goldenplayers" -> scenario = new GoldenPlayers();
-			case "chicken" -> scenario = new Chicken();
-			case "enderman" -> scenario = new Endermen();
-			case "stacked" -> scenario = new Stacked();
-			case "fallout" -> scenario = new Fallout();
-			case "doubledamage" -> scenario = new DoubleDamage();
-			case "onetable" -> scenario = new OneTable();
-			default -> {
-				sender.sendMessage(ChatColor.RED + "Usage: /scenario <scenario> [on/off]. Invalid Scenario!");
-				return true;
-			}
+		scenario = scenarios.get(args[0].toLowerCase());
+		if (scenario == null) {
+			sender.sendMessage(ChatColor.RED + "Usage: /scenario <scenario> [on/off]. Invalid Scenario!");
+			return true;
 		}
 
 		if (args[1].equals("on")) {
@@ -87,18 +95,11 @@ public class Scenarios implements CommandExecutor, TabCompleter {
 	static String[] onOff;
 
 	static {
-		arguments = new String[] {
-				"SkyHigh",
-				"Zombies",
-				"HalfOres",
-				"GoldenPlayers",
-				"Chicken",
-				"Enderman",
-				"Stacked",
-				"Fallout",
-				"DoubleDamage",
-				"OneTable"
-		};
+		List<String> scens = new ArrayList<>();
+		for (Scenario scenario : scenarios.values()) {
+			scens.add(scenario.GetName());
+		}
+		arguments = scens.toArray(arguments);
 
 		onOff = new String[] {
 				"on",

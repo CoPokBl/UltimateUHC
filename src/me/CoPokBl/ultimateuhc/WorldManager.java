@@ -41,10 +41,10 @@ public class WorldManager {
     }
 
     public void IfUhcWorldExistsDelete() {
-        if (Bukkit.getWorld("uhc") == null)
+        if (Bukkit.getWorld(Main.gameManager.WorldName) == null)
             return;
-        unloadWorld(Bukkit.getWorld("uhc"));
-        DeleteWorld("uhc");
+        unloadWorld(Bukkit.getWorld(Main.gameManager.WorldName));
+        DeleteWorld(Main.gameManager.WorldName);
     }
 
 }

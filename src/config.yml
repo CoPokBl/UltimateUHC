@@ -1,2 +1,67 @@
+# -------------------------------------------------- #
+#                     EVENTS                         #
+# -------------------------------------------------- #
+
+# Seconds before PvP is enabled
 secondsToPvp: 600
-secondsToMeetup: 1900
+# Seconds before players will be required to stay above ground and fight
+# Set to large number to disable
+secondsToMeetup: 1000
+# Seconds before world border will start shrinking
+secondsToShrink: 300
+# Seconds before world border will reach its smallest size
+secondsToBorderMin: 1500
+# Border size when it reaches its smallest size
+borderMinSize: 10
+
+# -------------------------------------------------- #
+#               UHC WORLD SETTINGS                   #
+# -------------------------------------------------- #
+
+# Name of the world to use for UHC
+worldName: uhc
+# The seed to use when generating the world. null represents random seed
+worldSeed: null
+# NORMAL, FLAT, LARGEBIOMES, AMPLIFIED
+worldType: NORMAL
+# NORMAL, NETHER, THE_END
+worldEnvironment: NORMAL
+# Delete the world after the UHC is completed (This will reset so that all that needs to be done is to restart the server)
+deleteWorldUponCompletion: true
+# The size of the world border at the beginning of the UHC
+worldBorderSize: 500
+
+# -------------------------------------------------- #
+#                 GAME SETTINGS                      #
+# -------------------------------------------------- #
+
+# Make players join the UHC when they join the server
+# If false then they will be sent to the default world and will be required to type /uhcjoin
+sendPlayersOnJoin: true
+# Makes the server restart when the UHC is completed. Only works on spigot servers or servers with a /restart command
+restartServerOnCompletion: true
+# Set the command to restart server. This doesn't even have to be a restart command. It can be /stop if you'd like.
+restartCommand: restart
+# Time before restarting the server (This is in seconds and applies when restartServerOnCompletion is true)
+restartServerTime: 60
+# Whether to automatically smelt ores and food items
+smeltOresAndFood: true
+# Whether to enable apples always dropping from leaves when broken
+enableAppleDrop: true
+# Whether to enable gravel to arrow crafting recipe (1 gravel = 1 arrow)
+enableGravelToArrow: true
+# Whether to enable wool to string crafting recipe (4 wool = 1 string). This allows players to get bows easier
+enable4WoolToString: true
+# Allow players to rejoin the game if they leave during the UHC (Only enable if you know everyone in the game)
+# If allowLateJoin is true then they will be able to rejoin before PvP is enabled regardless of this setting
+allowRejoin: false # Not working yet
+# Allow late joins to the UHC (They will only be able to join before PvP is enabled)
+allowLateJoin: true
+# Whether to place a block below players when they are scattered (This stops them being spawned somewhere dangerous)
+# It is highly recommended that you leave this enabled
+placeBlockBelowPlayers: true
+# What block to place below players when they are scattered (This stops them being spawned somewhere dangerous)
+# It is highly recommended that you don't set this to a flammable block
+teleportBlock: STONE
+# Whether to give players a book when the UHC starts
+giveBook: true

@@ -16,6 +16,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class Main extends JavaPlugin {
 	public static int SpigotVersion;
@@ -30,22 +31,16 @@ public class Main extends JavaPlugin {
 		gameManager = new GameManager();
 		scoreboardManager = new ScoreboardManager();
 
-		if (!getConfig().isSet("secondsToPvp")) {
-			try {
-				getConfig().save("config.yml");
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+		// thing
+		saveDefaultConfig();
 
 		// set config values
 		gameManager.TimeToPvp = getConfig().getInt("secondsToPvp");
 		gameManager.TimeToMeetup = getConfig().getInt("secondsToMeetup");
+		gameManager.WorldName = getConfig().getString("worldName");
 
 		// Get spigot version
 		SpigotVersion = Utils.GetVersion();
-
-		WorldManager worldManager = new WorldManager();
 
 		// register commands
 		this.getCommand("uhcscenario").setExecutor(new Scenarios());
@@ -78,16 +73,17 @@ public class Main extends JavaPlugin {
 		// Register the recipes
 		new Recipes().registerRecipes();
 
-		// Delete any existing UHC world
-		worldManager.IfUhcWorldExistsDelete();
-
 		// Create UHC world
-		WorldCreator wc = new WorldCreator("uhc");
-		wc.environment(World.Environment.NORMAL);
-		wc.type(WorldType.NORMAL);
+		String seedConfigValue = getConfig().getString("worldSeed");
+		WorldCreator wc = new WorldCreator(gameManager.WorldName);
+		if (seedConfigValue != null && !Objects.equals(seedConfigValue, "null")) {
+			wc.seed(Long.parseLong(seedConfigValue));
+		}
+		wc.environment(World.Environment.valueOf(getConfig().getString("worldEnvironment")));
+		wc.type(WorldType.valueOf(getConfig().getString("worldType")));
 		wc.createWorld();
 
-		World uhc = Bukkit.getWorld("uhc");
+		World uhc = Bukkit.getWorld(gameManager.WorldName);
 		if (uhc == null) {
 			Bukkit.getLogger().severe("World creation failed!");
 			Bukkit.getLogger().severe("Disabling");
@@ -97,7 +93,7 @@ public class Main extends JavaPlugin {
 
 		// Init world for UHC
 		uhc.getWorldBorder().setCenter(0, 0);
-		uhc.getWorldBorder().setSize(500);
+		uhc.getWorldBorder().setSize(getConfig().getInt("worldBorderSize"));
 		uhc.setSpawnLocation(0,100, 0);
 		if (!(Bukkit.getOnlinePlayers().isEmpty())) 
 			for (Player online : Bukkit.getOnlinePlayers()) {
@@ -111,7 +107,19 @@ public class Main extends JavaPlugin {
 	
 	@Override
 	public void onDisable() {
-		// when plugin stops
+
+		// Kick all players
+		for (Player online : Bukkit.getOnlinePlayers()) {
+			online.kickPlayer(ChatColor.RED + "The server is restarting!");
+		}
+
+		// If deleteWorldUponCompletion is true, delete the world
+		if (getConfig().getBoolean("deleteWorldUponCompletion")) {
+			WorldManager worldManager = new WorldManager();
+			worldManager.IfUhcWorldExistsDelete();
+			Bukkit.getLogger().info("UHC world deleted");
+		}
+
 		if (!(Bukkit.getOnlinePlayers().isEmpty())) {
 			for (Player online : Bukkit.getOnlinePlayers()) {
 				if (online.isOp()) {

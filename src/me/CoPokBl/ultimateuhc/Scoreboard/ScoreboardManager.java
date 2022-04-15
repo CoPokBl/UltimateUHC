@@ -1,6 +1,7 @@
 package me.CoPokBl.ultimateuhc.Scoreboard;
 
 import me.CoPokBl.ultimateuhc.Main;
+import me.CoPokBl.ultimateuhc.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -62,19 +63,19 @@ public class ScoreboardManager {
         if (Main.gameManager.PvpEnabled) {
             pvpValue = "Enabled";
         } else {
-            pvpValue = "Enabling in " + (Main.gameManager.TimeToPvp - Main.gameManager.gameLoopTimer) + " seconds";
+            pvpValue = Utils.GetTime(Main.gameManager.TimeToPvp - Main.gameManager.gameLoopTimer);
         }
-        Score pvpstatus = obj.getScore(ChatColor.YELLOW + "PVP: " + pvpValue);
-        pvpstatus.setScore(5);
+        Score pvpStatus = obj.getScore(ChatColor.YELLOW + "PVP: " + pvpValue);
+        pvpStatus.setScore(5);
         //meetup
         String meetupValue;
         if (Main.gameManager.MeetupEnabled) {
             meetupValue = "Enabled";
         } else {
-            meetupValue = "Enabling in " + (Main.gameManager.TimeToMeetup - Main.gameManager.gameLoopTimer) + " seconds";
+            meetupValue = Utils.GetTime(Main.gameManager.TimeToMeetup - Main.gameManager.gameLoopTimer);
         }
-        Score meetupstatus = obj.getScore(ChatColor.YELLOW + "Meetup: " + meetupValue);
-        meetupstatus.setScore(4);
+        Score meetupStatus = obj.getScore(ChatColor.YELLOW + "Meetup: " + meetupValue);
+        meetupStatus.setScore(4);
         // dead or alive
         if (Main.gameManager.AlivePlayers.contains(player)) {
             Score doa = obj.getScore(ChatColor.GREEN + "" + ChatColor.BOLD + "You Are Alive");

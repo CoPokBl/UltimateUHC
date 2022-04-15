@@ -43,30 +43,29 @@ public class NonTabCommands implements CommandExecutor {
         }
 
         if (label.equalsIgnoreCase("uhcleave")) {
-            if (!(sender instanceof Player)) {
-                return true;
-            }
-            Player p = (Player) sender;
-            gameManager.AlivePlayers.remove(p);
-            p.teleport(Bukkit.getWorld("world").getSpawnLocation());
+            sender.sendMessage(ChatColor.RED + "This command is depreciated and no longer works");
             return true;
-
+//            if (!(sender instanceof Player)) {
+//                return true;
+//            }
+//            Player p = (Player) sender;
+//            gameManager.AlivePlayers.remove(p);
+//            p.teleport(Bukkit.getWorld("world").getSpawnLocation());
+//            return true;
         }
 
         //debug
         if (label.equalsIgnoreCase("uhcdebug")) {
             if (!(sender.hasPermission("uhc.debug")))
                 return true;
-            sender.sendMessage("This command is for CoPokBl only.");
-            if (!(sender.getName().equals("CoPokBl")))
-                return true;
             if (args[0].equalsIgnoreCase("addalive")) {
                 gameManager.AlivePlayers.add(Bukkit.getPlayer(args[1]));
             }
+            sender.sendMessage(ChatColor.GREEN + "Debug Command Executed Successfully");
         }
 
         if (label.equalsIgnoreCase("uhclistscenarios")) {
-            sender.sendMessage(ChatColor.GOLD + "Scenarios: ");
+            sender.sendMessage(ChatColor.GOLD + "Enabled Scenarios: ");
             for (Scenario scenario : gameManager.Scenarios) {
                 sender.sendMessage("- " + ChatColor.GREEN + scenario.GetName());
             }
@@ -92,8 +91,8 @@ public class NonTabCommands implements CommandExecutor {
                     return true;
                 }
                 StringBuilder name = new StringBuilder();
-                for (int i = 0;i < args.length;i++) {
-                    name.append(args[i]).append(" ");
+                for (String arg : args) {
+                    name.append(arg).append(" ");
                 }
                 scoreboardManager.UhcName = name.toString();
                 sender.sendMessage(ChatColor.GREEN + "Set the name of the UHC to " + scoreboardManager.UhcName);
@@ -121,7 +120,7 @@ public class NonTabCommands implements CommandExecutor {
         }
 
         if (label.equalsIgnoreCase("uhcstatus")) {
-            sender.sendMessage(ChatColor.GREEN + "Current UHC game status:");
+            sender.sendMessage(ChatColor.GREEN + "Current UHC game status (You could just look at the scoreboard):");
             sender.sendMessage(ChatColor.RED + "In Game: " + gameManager.InGame);
             sender.sendMessage(ChatColor.AQUA + "Is Meetup: " + gameManager.MeetupEnabled);
             sender.sendMessage(ChatColor.GOLD + "PVP allowed: " + gameManager.PvpEnabled);
@@ -139,31 +138,7 @@ public class NonTabCommands implements CommandExecutor {
         }
 
         if (label.equalsIgnoreCase("uhcend")) {
-            if (args.length < 2) {
-                sender.sendMessage(ChatColor.RED + "Usage: /uhcend <winner>");
-                return true;
-            }
-            if (!(args[1].equals("confirm"))) {
-                sender.sendMessage(ChatColor.RED +
-                        "This command is not needed because when there is one player left it will do it by itself, " +
-                        "if you are sure you want to do this type /uhcend <winner> confirm");
-                return true;
-            }
-            Player target;
-            try {
-                target = Bukkit.getPlayer(args[0]);
-            } catch (Exception e) {
-                sender.sendMessage(ChatColor.RED + "That player does not exist! /uhcend <winner> confirm");
-                return true;
-            }
-            if (!(sender.hasPermission("uhc.end"))) {
-                sender.sendMessage(ChatColor.RED + "You Don't Have Permission To Do That!");
-                return false;
-            }
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "tellraw @a {\"color\":\"green\",\"text\":\"" + args[0] + " has won the UHC!!!!\"}");
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "title " + target.getName() + " title {\"color\":\"blue\", \"text\":\"You Have Won The UHC!\"}");
-            sender.sendMessage("Ended UHC.");
-            sender.sendMessage("Thanks For Using UltimateUHC by CoPokBl!");
+            sender.sendMessage(ChatColor.RED + "This command is deprecated and no longer works");
             return true;
         }
 
@@ -177,7 +152,7 @@ public class NonTabCommands implements CommandExecutor {
                 int health;
                 try {
                     health = Integer.parseInt(args[1]);
-                } catch(Exception e) {
+                } catch (Exception e) {
                     sender.sendMessage(ChatColor.RED + "Usage: /uhcsethealth <player> (health)");
                     return true;
                 }
@@ -190,47 +165,38 @@ public class NonTabCommands implements CommandExecutor {
         }
 
         if (label.equalsIgnoreCase("uhcpvp")) {
-            if (sender.hasPermission("uhc.pvp")) {
-                if (args[0].equals("true")) {
-                    gameManager.PvpEnabled = true;
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "title @a title {\"color\":\"red\", \"text\":\"PVP is Now Enabled!\"}");
-                    return true;
-                }
-                else if (args[0].equals("false")) {
-                    gameManager.PvpEnabled = false;
-                    return true;
-                }
-                sender.sendMessage(ChatColor.RED + "Usage: /uhcpvp (true/false");
+            if (!(sender.hasPermission("uhc.pvp"))) {
+                sender.sendMessage(ChatColor.RED + "You Don't Have Permission To Do That!");
                 return true;
             }
-            sender.sendMessage(ChatColor.RED + "You Don't Have Permission To Do That!");
+            sender.sendMessage(ChatColor.RED + "This command is deprecated and no longer works");
+            sender.sendMessage(ChatColor.RED + "Use /uhcaddtime " + (gameManager.TimeToPvp - gameManager.gameLoopTimer) +
+                    " to increase the game time and trigger PvP");
             return true;
         }
 
         if (label.equalsIgnoreCase("uhcserverend")) {
-            Player player = (Player) sender;
-            if (!(player.hasPermission("uhc.stopserver"))) {
-                player.sendMessage(ChatColor.RED + "You Don't Have Permission To Do That!");
-                return false;
+            if (!(sender.hasPermission("uhc.serverend"))) {
+                sender.sendMessage(ChatColor.RED + "You Don't Have Permission To Do That!");
+                return true;
             }
-            player.sendMessage("Closing Server...");
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "tellraw @a {\"color\":\"green\",\"text\":\"The Server Will Shutdown In 1 Minute\"}");
-            BukkitRunnable closeserver = new BukkitRunnable() {
-                @Override
-                public void run() {
-                    Bukkit.shutdown();
-                }
-            };
-            closeserver.runTaskLater(Main.plugin, 20 * 60);
+            sender.sendMessage(ChatColor.RED + "This command is deprecated. All this command did was /restart after 1 minute.");
+            return true;
         }
 
         if (label.equalsIgnoreCase("uhcinfo")) {
-            sender.sendMessage(ChatColor.BLUE + "UHC info:");
-            sender.sendMessage("You will join and get teleported to a random location with the effects slowness, blindness, mining fatugue and resistence.");
-            sender.sendMessage("Until the UHC starts you will be invincible. When it starts all the effects will be removed and a title will show.");
-            sender.sendMessage("PVP will be disabled until it tells you it has been enabled. During the time before meetup you have time to mine and get resourses.");
-            sender.sendMessage("During meetup you are not allowed to be underground or skybasing. You must head to 0, 0. If you don't you will be kicked from the UHC.");
-            sender.sendMessage("Have Fun!! Plugin By CoPokBl.");
+            sender.sendMessage(
+                    ChatColor.GOLD + "" + ChatColor.BOLD + "UHC info:");
+            sender.sendMessage(
+                    ChatColor.GOLD + "You will join and get teleported to a random location with the effects slowness, blindness, mining fatigue and resistance.");
+            sender.sendMessage(
+                    ChatColor.GOLD + "Until the UHC starts you will be invincible. When it starts all the effects will be removed and a title will show.");
+            sender.sendMessage(
+                    ChatColor.GOLD + "PVP will be disabled until it tells you it has been enabled. During the time before meetup you have time to mine and get resources.");
+            sender.sendMessage(
+                    ChatColor.GOLD + "During meetup you are not allowed to be underground or sky basing. You must head to 0, 0. If you don't you will be kicked from the UHC.");
+            sender.sendMessage(
+                    ChatColor.GOLD + "Have Fun!! Plugin By CoPokBl.");
             return true;
         }
 
@@ -252,7 +218,7 @@ public class NonTabCommands implements CommandExecutor {
             target.teleport(loc);
             target.sendMessage(ChatColor.GREEN + "You Have Been Teleported To A Random Location!");
             // set the block below the target to stone
-            uhc.getBlockAt(loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ()).setType(Material.STONE);
+            uhc.getBlockAt(loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ()).setType(Material.valueOf(Main.plugin.getConfig().getString("teleportBlock")));
             sender.sendMessage(ChatColor.GREEN + "Scattered " + args[0]);
             return true;
         }
@@ -290,6 +256,16 @@ public class NonTabCommands implements CommandExecutor {
                 return true;
             }
             sender.sendMessage(target.getName() + "'s health is: " + target.getHealth());
+            return true;
+        }
+
+        if (label.equalsIgnoreCase("uhccancelrestart")) {
+            if (!sender.hasPermission("uhc.cancelrestart")) {
+                sender.sendMessage(ChatColor.RED + "You Don't Have Permission To Do That!");
+                return false;
+            }
+            Bukkit.getScheduler().cancelTask(gameManager.ShutdownOnGameEndTaskId);
+            Bukkit.broadcastMessage(ChatColor.GREEN + "Restart Cancelled!");
             return true;
         }
 

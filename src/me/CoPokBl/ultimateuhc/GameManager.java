@@ -25,42 +25,29 @@ public class GameManager {
     public int gameLoopTimer = 0;
     public int TimeToMeetup;
     public int TimeToPvp;
+    public String WorldName;
+    public Integer ShutdownOnGameEndTaskId = null;
 
     public void SendPlayer(Player p) {
         scoreboardManager.CreateScoreboard(p);
         scoreboardManager.start(p);
         if (!InGame) {
-            AlivePlayers.add(p);
-            WorldProtections.NoInteract.add(p);
-
-            // Get the UHC world
-            World uhc = Bukkit.getWorld("uhc");
-            if (uhc == null) {
-                // um wtf
-                Bukkit.getLogger().severe(
-                        "Uhc world is null, failed to send player. Please restart the server. " +
-                                "If this error persists, contact CoPokBl#9451 on Discord.");
-                return;
-            }
-
-            // Teleport the player within the bounds of the world border
-            double wbSize = uhc.getWorldBorder().getSize()/2;
-            Location loc = Utils.GetTopLocation(uhc, (int) GetRandomNum(-wbSize, wbSize), (int) GetRandomNum(-wbSize, wbSize));
-            p.teleport(loc);
-            p.setGameMode(GameMode.SURVIVAL);
-
-            // set the block below the player to stone
-            uhc.getBlockAt(loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ()).setType(Material.STONE);
-
-            p.addPotionEffect((new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 99999, 255)));
-            p.addPotionEffect((new PotionEffect(PotionEffectType.BLINDNESS, 99999, 255)));
-            p.addPotionEffect((new PotionEffect(PotionEffectType.SLOW, 99999, 255)));
-            p.addPotionEffect((new PotionEffect(PotionEffectType.SLOW_DIGGING, 99999, 255)));
-            p.addPotionEffect((new PotionEffect(PotionEffectType.WATER_BREATHING, 99999, 255)));
+            JoinPlayerToGame(p);
         }
         else {
             // Game is running
-            World uhc = Bukkit.getWorld("uhc");
+            if (AlivePlayers.contains(p) && (Main.plugin.getConfig().getBoolean("allowRejoin") ||
+                    (!PvpEnabled && Main.plugin.getConfig().getBoolean("allowLateJoin")))) {
+                // The player is in the game and is allowed to rejoin
+                return;
+            }
+            if (!PvpEnabled && !MeetupEnabled && Main.plugin.getConfig().getBoolean("allowLateJoin")) {
+                // let them join
+                JoinPlayerToGame(p);
+                return;
+            }
+            // The player is not allowed to rejoin
+            World uhc = Bukkit.getWorld(WorldName);
             Location loc = Utils.GetTopLocation(uhc, 0, 0);
             p.teleport(loc);
             p.setGameMode(GameMode.SPECTATOR);
@@ -68,10 +55,38 @@ public class GameManager {
         }
     }
 
-    public void SetupPlayer(Player player) {
-        for (Scenario scenario : Scenarios) {
-            scenario.SetupPlayer(player);
+    private void JoinPlayerToGame(Player p) {
+        AlivePlayers.add(p);
+
+        // Get the UHC world
+        World uhc = Bukkit.getWorld(WorldName);
+        if (uhc == null) {
+            // um wtf
+            Bukkit.getLogger().severe(
+                    "Uhc world is null, failed to send player. Please restart the server. " +
+                            "If this error persists, contact CoPokBl#9451 on Discord.");
+            return;
         }
+
+        // Teleport the player within the bounds of the world border
+        double wbSize = uhc.getWorldBorder().getSize()/2;
+        Location loc = Utils.GetTopLocation(uhc, (int) GetRandomNum(-wbSize, wbSize), (int) GetRandomNum(-wbSize, wbSize));
+        p.teleport(loc);
+        p.setGameMode(GameMode.SURVIVAL);
+
+        // set the block below the player to stone
+        uhc.getBlockAt(loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ()).setType(Material.valueOf(Main.plugin.getConfig().getString("teleportBlock")));
+
+        if (!InGame) {
+            WorldProtections.NoInteract.add(p);
+            p.addPotionEffect((new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 99999, 255)));
+        }
+
+    }
+
+    public void SetupPlayer(Player player) {
+        for (Scenario scenario : Scenarios) { scenario.SetupPlayer(player); }
+        if (!Main.plugin.getConfig().getBoolean("giveBook")) return;
         ItemStack book = new ItemStack(Material.BOOK);
         player.getInventory().addItem(book);
     }
@@ -82,7 +97,7 @@ public class GameManager {
             SetupPlayer(online);
         }
         InGame = true;
-        World uhc = Bukkit.getWorld("uhc");
+        World uhc = Bukkit.getWorld(WorldName);
         if (uhc == null) {
             // um wtf
             Bukkit.getLogger().severe(
@@ -93,38 +108,40 @@ public class GameManager {
         uhc.setGameRule(GameRule.NATURAL_REGENERATION, false);
         uhc.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true);
         uhc.getWorldBorder().setCenter(new Location(uhc, 0, 100, 0));
-        uhc.getWorldBorder().setSize(500);
+        uhc.getWorldBorder().setSize(Main.plugin.getConfig().getInt("worldBorderSize"));
         for (Player online : Bukkit.getOnlinePlayers()) {
             for (PotionEffect effect : online.getActivePotionEffects()) {
                 online.removePotionEffect(effect.getType());
             }
-            online.setMaxHealth(20);
             online.setHealth(20);
             online.setFoodLevel(20);
 
             // display title to all players
             online.sendTitle(ChatColor.GREEN + "The UHC Has Begun!", ChatColor.GREEN + "", 10, 20*3, 10);
         }
-        WorldProtections.NoInteract.clear();
-        StartGameLoop();
+        WorldProtections.NoInteract.clear();  // Allow players to interact
+        StartGameLoop();  // Start the game
 
-        for (Scenario scenario : Scenarios) {
-            scenario.UhcStart();
-        }
+        for (Scenario scenario : Scenarios) { scenario.UhcStart(); }  // Let the scenarios know the game has started
     }
 
     private void StartGameLoop() {
         BukkitScheduler scheduler = Bukkit.getScheduler();
+        boolean borderHasShrunk = false;
+        int timeToBorder = Main.plugin.getConfig().getInt("secondsToShrink");
         scheduler.scheduleSyncRepeatingTask(Main.plugin, () -> {
 
             // runs every 1 seconds
             gameLoopTimer++;
 
+            if (gameLoopTimer >= timeToBorder && !borderHasShrunk) {
+                // shrink the border
+                World uhc = Bukkit.getWorld(WorldName);
+                uhc.getWorldBorder().setSize(Main.plugin.getConfig().getInt("borderMinSize"), Main.plugin.getConfig().getInt("secondsToBorderMin"));
+            }
             if (gameLoopTimer >= Main.plugin.getConfig().getInt("secondsToPvp") && !PvpEnabled) {
                 // pvp
                 PvpEnabled = true;
-                World uhc = Bukkit.getWorld("uhc");
-                uhc.getWorldBorder().setSize(20, 1800);
                 for (Player online : Bukkit.getOnlinePlayers()) {
                     online.sendTitle(ChatColor.RED + "PVP is Now Enabled!", ChatColor.GREEN + "", 10, 20*3, 10);
                 }
@@ -132,7 +149,8 @@ public class GameManager {
                 for (Scenario scenario : Scenarios) {
                     scenario.UhcEvent(UhcEventType.Pvp);
                 }
-            } else if (gameLoopTimer >= Main.plugin.getConfig().getInt("secondsToMeetup") && !MeetupEnabled) {
+            }
+            if (gameLoopTimer >= Main.plugin.getConfig().getInt("secondsToMeetup") && !MeetupEnabled) {
                 // meetup
                 MeetupEnabled = true;
                 for (Player online : Bukkit.getOnlinePlayers()) {
