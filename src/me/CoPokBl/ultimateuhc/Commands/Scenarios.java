@@ -33,6 +33,7 @@ public class Scenarios implements CommandExecutor, TabCompleter {
 		scenarios.put("onetable", new OneTable());
 		scenarios.put("noclean", new NoClean());
 		scenarios.put("nofall", new NoFall());
+		scenarios.put("superheroes", new SuperHeroes());
 	}
 
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -91,7 +92,7 @@ public class Scenarios implements CommandExecutor, TabCompleter {
 	}
 
 
-	static String[] arguments;
+	static String[] arguments = new String[] {};
 	static String[] onOff;
 
 	static {

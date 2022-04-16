@@ -6,6 +6,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
@@ -39,6 +41,12 @@ public class WorldProtections implements Listener {
     @EventHandler
     public void onInteract(PlayerInteractEvent e) {
         if (NoInteract.contains(e.getPlayer())) e.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onPlayerDamaged(EntityDamageEvent e) {
+        if (!(e.getEntity() instanceof Player)) return;
+        if (NoInteract.contains((Player) e.getEntity())) e.setCancelled(true);
     }
 
 }

@@ -77,14 +77,22 @@ public class GameManager {
         // set the block below the player to stone
         uhc.getBlockAt(loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ()).setType(Material.valueOf(Main.plugin.getConfig().getString("teleportBlock")));
 
-        if (!InGame) {
-            WorldProtections.NoInteract.add(p);
-            p.addPotionEffect((new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 99999, 255)));
+        if (!InGame) { WorldProtections.NoInteract.add(p); }
+        else {
+            // Game is running
+            SendPlayer(p);
         }
 
     }
 
     public void SetupPlayer(Player player) {
+        // remove effects
+        for (Player p : AlivePlayers) {
+            for (PotionEffect effect : p.getActivePotionEffects()) {
+                p.removePotionEffect(effect.getType());
+            }
+            p.getInventory().clear();
+        }
         for (Scenario scenario : Scenarios) { scenario.SetupPlayer(player); }
         if (!Main.plugin.getConfig().getBoolean("giveBook")) return;
         ItemStack book = new ItemStack(Material.BOOK);
@@ -110,9 +118,6 @@ public class GameManager {
         uhc.getWorldBorder().setCenter(new Location(uhc, 0, 100, 0));
         uhc.getWorldBorder().setSize(Main.plugin.getConfig().getInt("worldBorderSize"));
         for (Player online : Bukkit.getOnlinePlayers()) {
-            for (PotionEffect effect : online.getActivePotionEffects()) {
-                online.removePotionEffect(effect.getType());
-            }
             online.setHealth(20);
             online.setFoodLevel(20);
 
