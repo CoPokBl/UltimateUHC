@@ -32,7 +32,7 @@ public class Recipes {
 
         ShapedRecipe recipe = new ShapedRecipe(key, item);
 
-        recipe.shape("ggg", "ghg", "ggg");
+        recipe.shape(" g ", "ghg", " g ");
         recipe.setIngredient('g', Material.GOLD_INGOT);
         recipe.setIngredient('h', Material.PLAYER_HEAD);
 

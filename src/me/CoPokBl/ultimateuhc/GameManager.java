@@ -7,14 +7,13 @@ import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static me.CoPokBl.ultimateuhc.Main.scoreboardManager;
-import static me.CoPokBl.ultimateuhc.Utils.GetRandomNum;
 
 public class GameManager {
     public final List<Player> AlivePlayers = new ArrayList<>();
@@ -41,14 +40,14 @@ public class GameManager {
                 // The player is in the game and is allowed to rejoin
                 return;
             }
-            if (!PvpEnabled && !MeetupEnabled && Main.plugin.getConfig().getBoolean("allowLateJoin")) {
+            if (!PvpEnabled && Main.plugin.getConfig().getBoolean("allowLateJoin")) {
                 // let them join
                 JoinPlayerToGame(p);
                 return;
             }
             // The player is not allowed to rejoin
             World uhc = Bukkit.getWorld(WorldName);
-            Location loc = Utils.GetTopLocation(uhc, 0, 0);
+            Location loc = Utils.GetRandomSpawn(uhc);
             p.teleport(loc);
             p.setGameMode(GameMode.SPECTATOR);
             p.sendMessage(ChatColor.RED + "You Joined In The Middle Of A Game! You Can't Play.");
@@ -69,19 +68,22 @@ public class GameManager {
         }
 
         // Teleport the player within the bounds of the world border
-        double wbSize = uhc.getWorldBorder().getSize()/2;
-        Location loc = Utils.GetTopLocation(uhc, (int) GetRandomNum(-wbSize, wbSize), (int) GetRandomNum(-wbSize, wbSize));
+        Location loc = Utils.GetRandomSpawn(uhc);
         p.teleport(loc);
-        p.setGameMode(GameMode.SURVIVAL);
 
         // set the block below the player to stone
         uhc.getBlockAt(loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ()).setType(Material.valueOf(Main.plugin.getConfig().getString("teleportBlock")));
 
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                p.setGameMode(GameMode.SURVIVAL);
+            }
+        }.runTaskLater(Main.plugin, 20);
+
         if (!InGame) { WorldProtections.NoInteract.add(p); }
-        else {
-            // Game is running
-            SendPlayer(p);
-        }
+        // else Game is running
+
 
     }
 

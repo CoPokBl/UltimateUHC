@@ -36,7 +36,7 @@ public class SuperHeroes extends Scenario {
             }
             case 3 -> {
                 p.sendMessage(ChatColor.GREEN + "You were given super toughness!");
-                p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 99999, 5, false, false));
+                p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 99999, 2, false, false));
             }
             case 4 -> {
                 p.sendMessage(ChatColor.GREEN + "You were given super stealth!");

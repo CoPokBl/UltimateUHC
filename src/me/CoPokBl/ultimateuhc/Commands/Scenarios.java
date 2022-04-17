@@ -10,6 +10,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +19,7 @@ import java.util.Map;
 
 public class Scenarios implements CommandExecutor, TabCompleter {
 
-	private static final Map<String, Scenario> scenarios = new HashMap<>();
+	public static final Map<String, Scenario> scenarios = new HashMap<>();
 
 	static {
 		scenarios.put("skyhigh", new SkyHigh());
@@ -26,7 +27,7 @@ public class Scenarios implements CommandExecutor, TabCompleter {
 		scenarios.put("halfores", new HalfOres());
 		scenarios.put("goldenplayers", new GoldenPlayers());
 		scenarios.put("chicken", new Chicken());
-		scenarios.put("enderman", new Endermen());
+		scenarios.put("endermen", new Endermen());
 		scenarios.put("stacked", new Stacked());
 		scenarios.put("fallout", new Fallout());
 		scenarios.put("doubledamage", new DoubleDamage());
@@ -34,6 +35,7 @@ public class Scenarios implements CommandExecutor, TabCompleter {
 		scenarios.put("noclean", new NoClean());
 		scenarios.put("nofall", new NoFall());
 		scenarios.put("superheroes", new SuperHeroes());
+		scenarios.put("blooddiamonds", new BloodDiamonds());
 	}
 
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -67,11 +69,16 @@ public class Scenarios implements CommandExecutor, TabCompleter {
 				return true;
 			}
 			scenario.Enable();
-			Main.gameManager.Scenarios.add(scenario);
+			if (Main.gameManager.InGame) {
+				for (Player p : Main.gameManager.AlivePlayers) {
+					scenario.SetupPlayer(p);
+				}
+			}
 			sender.sendMessage(ChatColor.GREEN + "Scenario Enabled!");
 			// check events
 			if (Main.gameManager.PvpEnabled) scenario.UhcEvent(UhcEventType.Pvp);
 			if (Main.gameManager.MeetupEnabled) scenario.UhcEvent(UhcEventType.Meetup);
+			Main.gameManager.Scenarios.add(scenario);
 			return false;
 		}
 

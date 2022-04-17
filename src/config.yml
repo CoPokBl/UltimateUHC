@@ -65,3 +65,7 @@ placeBlockBelowPlayers: true
 teleportBlock: STONE
 # Whether to give players a book when the UHC starts
 giveBook: true
+# Scenarios that are enabled by default. This is helpful if you always use a specific scenario and don't want to have to enable it every time
+# Invalid options are ignored
+enabledScenarios:
+  - none

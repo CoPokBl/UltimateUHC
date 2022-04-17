@@ -6,6 +6,7 @@ import me.CoPokBl.ultimateuhc.EventListeners.CustomDrops;
 import me.CoPokBl.ultimateuhc.EventListeners.GameListeners;
 import me.CoPokBl.ultimateuhc.EventListeners.GoldenHeads;
 import me.CoPokBl.ultimateuhc.EventListeners.WorldProtections;
+import me.CoPokBl.ultimateuhc.Interfaces.Scenario;
 import me.CoPokBl.ultimateuhc.Scoreboard.ScoreboardManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -16,6 +17,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
 public class Main extends JavaPlugin {
@@ -38,6 +40,15 @@ public class Main extends JavaPlugin {
 		gameManager.TimeToPvp = getConfig().getInt("secondsToPvp");
 		gameManager.TimeToMeetup = getConfig().getInt("secondsToMeetup");
 		gameManager.WorldName = getConfig().getString("worldName");
+		List<String> scenarios = getConfig().getStringList("enabledScenarios");
+		for (String scenario : scenarios) {
+			if (Scenarios.scenarios.containsKey(scenario.toLowerCase())) {
+				Scenario scen = Scenarios.scenarios.get(scenario.toLowerCase());
+				scen.Enable();
+				gameManager.Scenarios.add(scen);
+				getLogger().info("Enabled scenario: " + scenario);
+			}
+		}
 
 		// Get spigot version
 		SpigotVersion = Utils.GetVersion();
@@ -63,6 +74,7 @@ public class Main extends JavaPlugin {
 		this.getCommand("uhcname").setExecutor(new NonTabCommands());
 		this.getCommand("uhclistscenarios").setExecutor(new NonTabCommands());
 		this.getCommand("uhcaddtime").setExecutor(new NonTabCommands());
+		this.getCommand("uhccancelrestart").setExecutor(new NonTabCommands());
 
 		// register events
 		Bukkit.getServer().getPluginManager().registerEvents(new CustomDrops(), this);
@@ -74,6 +86,9 @@ public class Main extends JavaPlugin {
 		new Recipes().registerRecipes();
 
 		// Create UHC world
+		if (Bukkit.getWorld(gameManager.WorldName) != null) {
+			getLogger().info("A UHC world exists");
+		}
 		String seedConfigValue = getConfig().getString("worldSeed");
 		WorldCreator wc = new WorldCreator(gameManager.WorldName);
 		if (seedConfigValue != null && !Objects.equals(seedConfigValue, "null")) {
@@ -100,13 +115,19 @@ public class Main extends JavaPlugin {
 				if (online.isOp()) {
 					online.sendMessage(ChatColor.RED + "Reloading the server breaks UltimateUHC, restart server now!");
 					online.sendMessage(ChatColor.RED + "UltimateUHC is now disabling...");
+					getLogger().severe("Reloading the server breaks UltimateUHC, restart server now!");
 					Bukkit.getPluginManager().disablePlugin(this);
 				}
 			}
+
+		getLogger().info("Enabled UltimateUHC");
 	}
 	
 	@Override
 	public void onDisable() {
+
+		WorldManager worldManager = new WorldManager();
+		worldManager.WorldPath = Bukkit.getWorld(getConfig().getString("worldName")).getWorldFolder();
 
 		// Kick all players
 		for (Player online : Bukkit.getOnlinePlayers()) {
@@ -115,28 +136,17 @@ public class Main extends JavaPlugin {
 
 		// If deleteWorldUponCompletion is true, delete the world
 		if (getConfig().getBoolean("deleteWorldUponCompletion")) {
-			WorldManager worldManager = new WorldManager();
 			worldManager.IfUhcWorldExistsDelete();
 			Bukkit.getLogger().info("UHC world deleted");
 		}
 
-		if (!(Bukkit.getOnlinePlayers().isEmpty())) {
-			for (Player online : Bukkit.getOnlinePlayers()) {
-				if (online.isOp()) {
-					online.sendMessage(ChatColor.RED + "UltimateUHC has been disabled.");
-				}
-			}
-		} else {
-			Bukkit.getLogger().info("UltimateUHC has been disabled.");
-		}
+		getLogger().info("UltimateUHC has been disabled.");
 	}
 	
 
 
 	
-	public String t(String mes) {
-		return ChatColor.translateAlternateColorCodes('&', mes);
-	}
+	public String t(String mes) { return ChatColor.translateAlternateColorCodes('&', mes); }
 	
 
 	

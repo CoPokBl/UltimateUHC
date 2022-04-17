@@ -60,6 +60,17 @@ public class NonTabCommands implements CommandExecutor {
                 return true;
             if (args[0].equalsIgnoreCase("addalive")) {
                 gameManager.AlivePlayers.add(Bukkit.getPlayer(args[1]));
+            } else if (args[0].equalsIgnoreCase("randomtp")) {
+                if (!(sender instanceof Player)) {
+                    return true;
+                }
+                Player p = (Player) sender;
+                Location loc = Utils.GetRandomSpawn(Bukkit.getWorld(gameManager.WorldName));
+                if (loc == null) {
+                    p.sendMessage(ChatColor.RED + "No Spawns Found!");
+                    return true;
+                }
+                p.teleport(loc);
             }
             sender.sendMessage(ChatColor.GREEN + "Debug Command Executed Successfully");
         }
@@ -213,8 +224,7 @@ public class NonTabCommands implements CommandExecutor {
             }
             target.addPotionEffect((new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 100, 255)));
             World uhc = Bukkit.getWorld("uhc");
-            double wbSize = uhc.getWorldBorder().getSize()/2;
-            Location loc = Utils.GetTopLocation(uhc, (int) GetRandomNum(-wbSize, wbSize), (int) GetRandomNum(-wbSize, wbSize));
+            Location loc = Utils.GetRandomSpawn(uhc);
             target.teleport(loc);
             target.sendMessage(ChatColor.GREEN + "You Have Been Teleported To A Random Location!");
             // set the block below the target to stone

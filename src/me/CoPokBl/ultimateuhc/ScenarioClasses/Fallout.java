@@ -31,7 +31,7 @@ public class Fallout extends ScenarioListener {
         }
         BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
         taskID = scheduler.scheduleSyncRepeatingTask(Main.plugin, () -> {
-            for (Player targetPlayer : Bukkit.getOnlinePlayers()) {
+            for (Player targetPlayer : Main.gameManager.AlivePlayers) {
                 if (targetPlayer.getLocation().getY() > 60) {
                     targetPlayer.damage(1);
                 }

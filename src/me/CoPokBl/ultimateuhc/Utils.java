@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 
 import java.util.List;
 import java.util.Objects;
@@ -17,9 +18,52 @@ public class Utils {
 
         while (world.getBlockAt(x, posy, z).getType() == Material.AIR) {
             posy--;
+            if (posy < -300) return null;
         }
         posy++;
         return new Location(world, x+0.5, posy, z+0.5);
+    }
+
+    public static Location GetValidTopLocation(World world, int x, int z) {
+        for (int i = 255; i > -200; i--) {
+            Block block = world.getBlockAt(x, i, z);
+            if (block.getType() == Material.AIR) {
+                continue;
+            }
+            if (block.getType() != Material.BEDROCK && block.getType() != Material.LAVA) {  // don't spawn on bedrock or lava
+                if (world.getBlockAt(x, i+2, z).getType() != Material.AIR || world.getBlockAt(x, i+1, z).getType() != Material.AIR) {
+                    // don't spawn player in blocks
+                    continue;
+                }
+                return new Location(world, x+0.5, i+1, z+0.5);
+            }
+            // continue until block is air again
+            int loops = 0;
+            while (block.getType() != Material.AIR) {
+                i--;
+                loops++;
+                if (loops > 1000) return null;
+                block = world.getBlockAt(x, i, z);
+            }
+        }
+        return null;
+    }
+
+    public static Location GetRandomSpawn(World world) {
+        double wbSize = world.getWorldBorder().getSize()/2;
+        double x;
+        double z;
+        Location loc = null;
+
+        int loops = 0;
+        while (loc == null) {
+            x = GetRandomNum(-wbSize, wbSize);
+            z = GetRandomNum(-wbSize, wbSize);
+            loc = GetValidTopLocation(world, (int)x, (int)z);
+            loops++;
+            if (loops > 100) return null;  // no spawn found somehow
+        }
+        return loc;
     }
 
     public static int GetVersion() {

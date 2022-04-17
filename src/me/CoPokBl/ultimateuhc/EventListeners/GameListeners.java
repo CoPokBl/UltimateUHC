@@ -51,13 +51,17 @@ public class GameListeners implements Listener {
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
+        MainBoard board = new MainBoard(event.getPlayer().getUniqueId());
+        if (board.hasID())
+            board.stop();
+        if (Main.plugin.getConfig().getBoolean("allowRejoin") ||
+                (Main.plugin.getConfig().getBoolean("allowLateJoin") && !gameManager.PvpEnabled)) {
+            return;
+        }
         if (gameManager.AlivePlayers.contains(event.getPlayer())) {
             gameManager.AlivePlayers.remove(event.getPlayer());
             event.getPlayer().setHealth(0);  // Kill them
         }
-        MainBoard board = new MainBoard(event.getPlayer().getUniqueId());
-        if (board.hasID())
-            board.stop();
     }
 
 

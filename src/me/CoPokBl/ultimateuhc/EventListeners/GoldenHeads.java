@@ -14,10 +14,12 @@ public class GoldenHeads implements Listener {
     @EventHandler
     public void onPlayerEatFood(PlayerItemConsumeEvent event) {
         ItemStack item = event.getItem();
-        Player p = (Player) event.getPlayer();
+        Player p = event.getPlayer();
         if (event.getItem().getType().equals(Material.GOLDEN_APPLE) && item.getItemMeta().getDisplayName().contains("Golden Head")) {
             // Player ate golden head
             p.addPotionEffect((new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 1)));
+            p.addPotionEffect((new PotionEffect(PotionEffectType.ABSORPTION, 200, 3)));
+            p.addPotionEffect((new PotionEffect(PotionEffectType.SPEED, 200, 1)));
         }
     }
 

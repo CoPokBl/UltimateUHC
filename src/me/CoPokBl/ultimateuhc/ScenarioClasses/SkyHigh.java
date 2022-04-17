@@ -33,7 +33,7 @@ public class SkyHigh extends Scenario {
         taskID = scheduler.scheduleSyncRepeatingTask(Main.plugin, () -> {
 
             // Damage players below Y = 100 every 2 seconds
-            for (Player targetPlayer : Bukkit.getOnlinePlayers()) {
+            for (Player targetPlayer : Main.gameManager.AlivePlayers) {
                 if (targetPlayer.getLocation().getY() < 100) {
                     targetPlayer.damage(1);
                 }
