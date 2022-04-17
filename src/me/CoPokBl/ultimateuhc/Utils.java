@@ -1,11 +1,13 @@
 package me.CoPokBl.ultimateuhc;
 
 import me.CoPokBl.ultimateuhc.Interfaces.Scenario;
+import me.CoPokBl.ultimateuhc.OverrideTypes.UhcPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.Objects;
@@ -102,6 +104,13 @@ public class Utils {
         if (hours > 0) return hours + "h " + minutes + "m " + seconds + "s";
         else if (minutes > 0) return minutes + "m " + seconds + "s";
         else return seconds + "s";
+    }
+
+    public static boolean IsPlayerAlive(Player player) {
+        for (UhcPlayer p : Main.gameManager.AlivePlayers) {
+            if (p.getUUID().equals(player.getUniqueId())) return true;
+        }
+        return false;
     }
 
 }

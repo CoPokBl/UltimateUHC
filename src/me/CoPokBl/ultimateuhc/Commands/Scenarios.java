@@ -3,6 +3,7 @@ package me.CoPokBl.ultimateuhc.Commands;
 import me.CoPokBl.ultimateuhc.Interfaces.Scenario;
 import me.CoPokBl.ultimateuhc.Interfaces.UhcEventType;
 import me.CoPokBl.ultimateuhc.Main;
+import me.CoPokBl.ultimateuhc.OverrideTypes.UhcPlayer;
 import me.CoPokBl.ultimateuhc.ScenarioClasses.*;
 import me.CoPokBl.ultimateuhc.Utils;
 import org.bukkit.ChatColor;
@@ -70,8 +71,8 @@ public class Scenarios implements CommandExecutor, TabCompleter {
 			}
 			scenario.Enable();
 			if (Main.gameManager.InGame) {
-				for (Player p : Main.gameManager.AlivePlayers) {
-					scenario.SetupPlayer(p);
+				for (UhcPlayer p : Main.gameManager.AlivePlayers) {
+					scenario.SetupPlayer(p.getPlayer());
 				}
 			}
 			sender.sendMessage(ChatColor.GREEN + "Scenario Enabled!");

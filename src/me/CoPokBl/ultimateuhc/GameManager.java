@@ -3,6 +3,7 @@ package me.CoPokBl.ultimateuhc;
 import me.CoPokBl.ultimateuhc.EventListeners.WorldProtections;
 import me.CoPokBl.ultimateuhc.Interfaces.Scenario;
 import me.CoPokBl.ultimateuhc.Interfaces.UhcEventType;
+import me.CoPokBl.ultimateuhc.OverrideTypes.UhcPlayer;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -11,12 +12,17 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static me.CoPokBl.ultimateuhc.Main.scoreboardManager;
 
 public class GameManager {
-    public final List<Player> AlivePlayers = new ArrayList<>();
+    public final List<UhcPlayer> AlivePlayers = new CopyOnWriteArrayList<>();
+    public final List<UhcPlayer> DeadPlayers = new ArrayList<>();
+    public final HashMap<UhcPlayer, ItemStack[]> OfflinePlayerInventories = new HashMap<>();
+    public final HashMap<UhcPlayer, Location> OfflinePlayerLocations = new HashMap<>();
     public List<Scenario> Scenarios = new ArrayList<>();
     public Boolean PvpEnabled = false;
     public Boolean InGame = false;
@@ -35,14 +41,16 @@ public class GameManager {
         }
         else {
             // Game is running
-            if (AlivePlayers.contains(p) && (Main.plugin.getConfig().getBoolean("allowRejoin") ||
+            if (Utils.IsPlayerAlive(p) && (Main.plugin.getConfig().getBoolean("allowRejoin") ||
                     (!PvpEnabled && Main.plugin.getConfig().getBoolean("allowLateJoin")))) {
                 // The player is in the game and is allowed to rejoin
+                p.sendMessage(ChatColor.GREEN + "You have rejoined the game.");
                 return;
             }
-            if (!PvpEnabled && Main.plugin.getConfig().getBoolean("allowLateJoin")) {
+            if (!PvpEnabled && Main.plugin.getConfig().getBoolean("allowLateJoin") && !DeadPlayers.contains(new UhcPlayer(p))) {
                 // let them join
                 JoinPlayerToGame(p);
+                p.sendMessage(ChatColor.GREEN + "You have joined the game late.");
                 return;
             }
             // The player is not allowed to rejoin
@@ -55,7 +63,7 @@ public class GameManager {
     }
 
     private void JoinPlayerToGame(Player p) {
-        AlivePlayers.add(p);
+        AlivePlayers.add(new UhcPlayer(p.getUniqueId()));
 
         // Get the UHC world
         World uhc = Bukkit.getWorld(WorldName);
@@ -89,7 +97,8 @@ public class GameManager {
 
     public void SetupPlayer(Player player) {
         // remove effects
-        for (Player p : AlivePlayers) {
+        for (UhcPlayer up : AlivePlayers) {
+            Player p = up.getPlayer();
             for (PotionEffect effect : p.getActivePotionEffects()) {
                 p.removePotionEffect(effect.getType());
             }
@@ -132,6 +141,25 @@ public class GameManager {
         for (Scenario scenario : Scenarios) { scenario.UhcStart(); }  // Let the scenarios know the game has started
     }
 
+    public void KillOffline() {
+        World uhc = Bukkit.getWorld(WorldName);
+        for (UhcPlayer p : AlivePlayers) {
+            Bukkit.broadcastMessage(p.getName() + " isOffline: " + !p.isOnline());
+            if (!p.isOnline()) {
+                AlivePlayers.remove(p);
+                DeadPlayers.add(p);
+
+                // Drop their items
+                for (ItemStack item : OfflinePlayerInventories.get(p)) {
+                    if (item == null) continue;
+                    uhc.dropItemNaturally(OfflinePlayerLocations.get(p), item);
+                    Bukkit.broadcastMessage(ChatColor.RED + "Player " + p.getName() + " died and dropped " + item.getAmount() + " " + item.getType());
+                }
+                Bukkit.broadcastMessage(p.getName() + "died due to being offline.");
+            }
+        }
+    }
+
     private void StartGameLoop() {
         BukkitScheduler scheduler = Bukkit.getScheduler();
         boolean borderHasShrunk = false;
@@ -148,6 +176,12 @@ public class GameManager {
             }
             if (gameLoopTimer >= Main.plugin.getConfig().getInt("secondsToPvp") && !PvpEnabled) {
                 // pvp
+
+                // kill players who are not in the game if things
+                if (!Main.plugin.getConfig().getBoolean("allowRejoin")) {
+                    KillOffline();
+                }
+
                 PvpEnabled = true;
                 for (Player online : Bukkit.getOnlinePlayers()) {
                     online.sendTitle(ChatColor.RED + "PVP is Now Enabled!", ChatColor.GREEN + "", 10, 20*3, 10);

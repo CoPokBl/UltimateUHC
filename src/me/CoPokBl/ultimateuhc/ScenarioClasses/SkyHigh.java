@@ -3,6 +3,7 @@ package me.CoPokBl.ultimateuhc.ScenarioClasses;
 import me.CoPokBl.ultimateuhc.Interfaces.Scenario;
 import me.CoPokBl.ultimateuhc.Interfaces.UhcEventType;
 import me.CoPokBl.ultimateuhc.Main;
+import me.CoPokBl.ultimateuhc.OverrideTypes.UhcPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -33,9 +34,9 @@ public class SkyHigh extends Scenario {
         taskID = scheduler.scheduleSyncRepeatingTask(Main.plugin, () -> {
 
             // Damage players below Y = 100 every 2 seconds
-            for (Player targetPlayer : Main.gameManager.AlivePlayers) {
-                if (targetPlayer.getLocation().getY() < 100) {
-                    targetPlayer.damage(1);
+            for (UhcPlayer targetPlayer : Main.gameManager.AlivePlayers) {
+                if (targetPlayer.getPlayer().getLocation().getY() < 100) {
+                    targetPlayer.getPlayer().damage(1);
                 }
             }
 

@@ -1,6 +1,7 @@
 package me.CoPokBl.ultimateuhc.Scoreboard;
 
 import me.CoPokBl.ultimateuhc.Main;
+import me.CoPokBl.ultimateuhc.OverrideTypes.UhcPlayer;
 import me.CoPokBl.ultimateuhc.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -77,7 +78,7 @@ public class ScoreboardManager {
         Score meetupStatus = obj.getScore(ChatColor.YELLOW + "Meetup: " + meetupValue);
         meetupStatus.setScore(4);
         // dead or alive
-        if (Main.gameManager.AlivePlayers.contains(player)) {
+        if (Utils.IsPlayerAlive(player)) {
             Score doa = obj.getScore(ChatColor.GREEN + "" + ChatColor.BOLD + "You Are Alive");
             doa.setScore(3);
         } else {

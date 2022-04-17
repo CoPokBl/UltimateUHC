@@ -2,6 +2,7 @@ package me.CoPokBl.ultimateuhc.Commands;
 
 import me.CoPokBl.ultimateuhc.Interfaces.Scenario;
 import me.CoPokBl.ultimateuhc.Main;
+import me.CoPokBl.ultimateuhc.OverrideTypes.UhcPlayer;
 import me.CoPokBl.ultimateuhc.Utils;
 import org.bukkit.*;
 import org.bukkit.command.Command;
@@ -34,7 +35,7 @@ public class NonTabCommands implements CommandExecutor {
                 return true;
             }
             Player p = (Player) sender;
-            if (gameManager.AlivePlayers.contains(p)) {
+            if (gameManager.AlivePlayers.contains(new UhcPlayer(p))) {
                 p.sendMessage(ChatColor.RED + "You Are Already In The Game!");
                 return true;
             }
@@ -59,7 +60,7 @@ public class NonTabCommands implements CommandExecutor {
             if (!(sender.hasPermission("uhc.debug")))
                 return true;
             if (args[0].equalsIgnoreCase("addalive")) {
-                gameManager.AlivePlayers.add(Bukkit.getPlayer(args[1]));
+                gameManager.AlivePlayers.add(new UhcPlayer(Bukkit.getPlayer(args[1])));
             } else if (args[0].equalsIgnoreCase("randomtp")) {
                 if (!(sender instanceof Player)) {
                     return true;
@@ -140,7 +141,7 @@ public class NonTabCommands implements CommandExecutor {
                 return true;
             Player p = (Player) sender;
             sender.sendMessage(ChatColor.BLUE + "WorldBorder: " + (int)p.getWorld().getWorldBorder().getSize());
-            if (gameManager.AlivePlayers.contains(p)) {
+            if (gameManager.AlivePlayers.contains(new UhcPlayer(p))) {
                 sender.sendMessage(ChatColor.GREEN + "You Are Alive!!");
                 return true;
             }
@@ -242,8 +243,8 @@ public class NonTabCommands implements CommandExecutor {
                     return true;
                 }
                 Bukkit.dispatchCommand(sender, "uhcscatter " + target.getName());
-                gameManager.AlivePlayers.remove(target);
-                gameManager.AlivePlayers.add(target);
+                gameManager.AlivePlayers.remove(new UhcPlayer(target));
+                gameManager.AlivePlayers.add(new UhcPlayer(target));
                 gameManager.SetupPlayer(target);
                 target.setGameMode(GameMode.SURVIVAL);
                 sender.sendMessage(ChatColor.GREEN + "You Have Respawned " + target.getName() + "!");
