@@ -1,10 +1,12 @@
 package me.CoPokBl.ultimateuhc;
 
 import me.CoPokBl.ultimateuhc.OverrideTypes.UhcPlayer;
+import net.minecraft.server.v1_8_R3.EntityLiving;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftLivingEntity;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -13,7 +15,9 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.MetadataValue;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import static me.CoPokBl.ultimateuhc.Main.gameManager;
@@ -98,15 +102,15 @@ public class OfflinePlayersManager implements Listener {
         World uhc = Bukkit.getWorld(Main.gameManager.WorldName);
         Entity entity = uhc.spawnEntity(event.getPlayer().getLocation(), EntityType.VILLAGER);
         entity.setCustomNameVisible(true);
-        entity.setCustomName(event.getPlayer().getName());
+        entity.setCustomName(ChatColor.BOLD + event.getPlayer().getName());
 
         // make entity livingentity
         LivingEntity entityLiving = (LivingEntity) entity;
-        entityLiving.setAI(false);
+        EntityLiving handle = ((CraftLivingEntity) entity).getHandle();
+        handle.getDataWatcher().watch(15, (byte) (1));
         entityLiving.setRemoveWhenFarAway(false);
         entityLiving.setHealth(event.getPlayer().getHealth());
         entityLiving.setCanPickupItems(false);
-        entityLiving.addScoreboardTag("UHC_OfflinePlayer_" + event.getPlayer().getUniqueId());
 
         gameManager.OfflinePlayerEntities.put(event.getPlayer().getUniqueId().toString(), entityLiving);
 
@@ -123,8 +127,8 @@ public class OfflinePlayersManager implements Listener {
         }
 
         boolean found = false;
-        for (String tag : e.getEntity().getScoreboardTags()) {
-            if (tag.startsWith("UHC_OfflinePlayer_")) {
+        for (UhcPlayer p : Main.gameManager.AlivePlayers) {
+            if (Objects.equals(e.getEntity().getCustomName(), ChatColor.BOLD + p.getName())) {
                 found = true;
                 break;
             }
@@ -152,19 +156,15 @@ public class OfflinePlayersManager implements Listener {
 
         // check if entity has the tag
         boolean found = false;
-        String uuid = null;
-        for (String tag : e.getEntity().getScoreboardTags()) {
-            if (tag.startsWith("UHC_OfflinePlayer_")) {
+        UhcPlayer p = null;
+        for (UhcPlayer pl : Main.gameManager.AlivePlayers) {
+            if (Objects.equals(e.getEntity().getCustomName(), ChatColor.BOLD + pl.getName())) {
                 found = true;
-                uuid = tag.replace("UHC_OfflinePlayer_", "");
+                p = pl;
                 break;
             }
         }
         if (!found) return;
-
-        String playersName = e.getEntity().getCustomName();
-        UhcPlayer p = new UhcPlayer(UUID.fromString(uuid));
-        World uhc = e.getEntity().getWorld();
 
         if (p.isOnline()) {
             Bukkit.getLogger().severe("Player is online but their offline replacement died, what the hell happened?\n" +

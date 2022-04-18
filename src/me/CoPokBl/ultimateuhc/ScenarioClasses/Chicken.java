@@ -15,7 +15,7 @@ public class Chicken extends Scenario {
     @Override
     public void SetupPlayer(Player player) {
         player.setHealth(1);
-        player.getInventory().addItem(new ItemStack(Material.ENCHANTED_GOLDEN_APPLE));
+        player.getInventory().addItem(new ItemStack(Material.GOLDEN_APPLE, 1));
     }
 
 }

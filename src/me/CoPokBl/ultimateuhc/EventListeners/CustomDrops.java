@@ -16,16 +16,12 @@ public class CustomDrops implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onBlockBreak(BlockBreakEvent e) {
 
-        if (!e.isDropItems()) return;
+        if (e.isCancelled()) return;
 
         if (Main.plugin.getConfig().getBoolean("enableAppleDrop")) {
             Material block = e.getBlock().getType();
-            if (block.equals(Material.OAK_LEAVES) ||
-                    block.equals(Material.SPRUCE_LEAVES) ||
-                    block.equals(Material.DARK_OAK_LEAVES) ||
-                    block.equals(Material.BIRCH_LEAVES) ||
-                    block.equals(Material.ACACIA_LEAVES) ||
-                    block.equals(Material.JUNGLE_LEAVES)) {
+            if (block.equals(Material.LEAVES) ||
+                    block.equals(Material.LEAVES_2)) {
                 Player player = e.getPlayer();
                 World world = player.getWorld();
                 ItemStack apple = new ItemStack(Material.APPLE);
@@ -38,14 +34,16 @@ public class CustomDrops implements Listener {
         // auto smelt
         if (e.getBlock().getType().equals(Material.IRON_ORE)) {
             // iron
-            e.setDropItems(false);
+            e.setCancelled(true);
+            e.getBlock().setType(Material.AIR);
             World world = e.getPlayer().getWorld();
             ItemStack ironIngots = new ItemStack(Material.IRON_INGOT);
             world.dropItemNaturally(e.getBlock().getLocation(), ironIngots);
         }
         if (e.getBlock().getType().equals(Material.GOLD_ORE) && !Main.gameManager.Scenarios.contains(new GoldenPlayers())) {
             // gold
-            e.setDropItems(false);
+            e.setCancelled(true);
+            e.getBlock().setType(Material.AIR);
             World world = e.getPlayer().getWorld();
             ItemStack goldIngots = new ItemStack(Material.GOLD_INGOT);
             world.dropItemNaturally(e.getBlock().getLocation(), goldIngots);

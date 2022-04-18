@@ -24,7 +24,8 @@ public class Stacked extends ScenarioListener {
         Location loc = event.getBlock().getLocation();
 
         World world = p.getWorld();
-        event.setDropItems(false);
+        event.setCancelled(true);
+        event.getBlock().setType(Material.AIR);
         int dia = (int) GetRandomNum(1, 2);
         int iro = (int) GetRandomNum(1, 10);
         int gol = (int) GetRandomNum(1, 5);
@@ -35,9 +36,9 @@ public class Stacked extends ScenarioListener {
         ItemStack diam = new ItemStack(Material.DIAMOND, dia);
         ItemStack iron = new ItemStack(Material.IRON_INGOT, iro);
         ItemStack gold = new ItemStack(Material.GOLD_INGOT, gol);
-        ItemStack wood = new ItemStack(Material.OAK_LOG, woo);
+        ItemStack wood = new ItemStack(Material.LOG, woo);
         ItemStack appl = new ItemStack(Material.APPLE, apl);
-        ItemStack lapi = new ItemStack(Material.LAPIS_LAZULI, lap);
+        ItemStack lapi = new ItemStack(Material.LAPIS_ORE, lap);
         ItemStack obsi = new ItemStack(Material.OBSIDIAN, obs);
         world.dropItemNaturally(loc, diam);
         world.dropItemNaturally(loc, iron);
