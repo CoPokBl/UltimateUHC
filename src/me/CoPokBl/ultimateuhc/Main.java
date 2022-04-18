@@ -1,3 +1,5 @@
+// This is a version of the plugin designed for 1.8.x in hope that it will work with 1.9+ as well
+
 package me.CoPokBl.ultimateuhc;
 
 import me.CoPokBl.ultimateuhc.Commands.NonTabCommands;
