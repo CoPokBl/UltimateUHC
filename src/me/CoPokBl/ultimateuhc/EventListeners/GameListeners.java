@@ -41,7 +41,12 @@ public class GameListeners implements Listener {
                 Player p = e.getPlayer();
                 World uhc = Bukkit.getWorld(gameManager.WorldName);
                 assert uhc != null;
-                p.teleport(Utils.GetTopLocation(uhc, 0, 0));
+                Location loc = Utils.GetTopLocation(uhc, 0, 0);
+                if (loc == null) {
+                    loc.getWorld().getBlockAt(loc).setType(Material.STONE);
+                }
+                loc = Utils.GetTopLocation(uhc, 0, 0);
+                p.teleport(loc);
                 if (!gameManager.Scenarios.contains(new Zombies())) {
                     p.setGameMode(GameMode.SPECTATOR);
                 }
@@ -57,12 +62,8 @@ public class GameListeners implements Listener {
             board.stop();
         if (Main.plugin.getConfig().getBoolean("allowRejoin") ||
                 (Main.plugin.getConfig().getBoolean("allowLateJoin") && !gameManager.PvpEnabled)) {
-            gameManager.OfflinePlayerInventories.put(new UhcPlayer(event.getPlayer()), event.getPlayer().getInventory().getContents());
-            gameManager.OfflinePlayerLocations.put(new UhcPlayer(event.getPlayer()), event.getPlayer().getLocation());
-            for (ItemStack item : event.getPlayer().getInventory().getContents()) {
-                if (item == null) { continue; }
-                Bukkit.broadcastMessage(item.getType().toString());
-            }
+            // They can rejoin
+            // don't remove them from the game
             return;
         }
         if (Utils.IsPlayerAlive(event.getPlayer())) {
@@ -74,27 +75,9 @@ public class GameListeners implements Listener {
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent e) {
-        gameManager.AlivePlayers.remove(e.getEntity().getPlayer());
-        if (gameManager.AlivePlayers.size() == 1 && gameManager.InGame) {
-            // run win
-            final Player winner = gameManager.AlivePlayers.get(0).getPlayer();
-            Bukkit.broadcastMessage(ChatColor.GREEN + winner.getDisplayName() + " has won the UHC!!!!");
-            winner.sendTitle(ChatColor.RED + "You Have Won The UHC!",  "", 10, 20*5, 10);
-            gameManager.InGame = false;
-            if (Main.plugin.getConfig().getBoolean("restartServerOnCompletion")) {
-                int secondsToRestart = Main.plugin.getConfig().getInt("restartServerTime");
-                gameManager.ShutdownOnGameEndTaskId = Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, () -> {
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), Main.plugin.getConfig().getString("restartCommand"));
-                }, 20L * secondsToRestart);
-                Bukkit.broadcastMessage(ChatColor.RED + "The server will restart in " + secondsToRestart + " seconds!");
-                // tell all the operators to type /uhccancelrestart to cancel the restart
-                Bukkit.getOnlinePlayers().forEach(player -> {
-                    if (player.isOp()) {
-                        player.sendMessage(ChatColor.RED + "Type /uhccancelrestart to cancel the restart");
-                    }
-                });
-            }
-        }
+        gameManager.AlivePlayers.remove(new UhcPlayer(e.getEntity().getPlayer()));
+        Utils.RemovePlayerFromAlive(e.getEntity().getPlayer());
+        gameManager.WinCheck();
         Player p = e.getEntity().getPlayer();
         p.getWorld().strikeLightningEffect(p.getLocation());
 
@@ -107,6 +90,8 @@ public class GameListeners implements Listener {
         // Drop the head
         World world = p.getWorld();
         world.dropItemNaturally(p.getLocation(), head);
+
+        gameManager.WinCheck();
     }
 
     @EventHandler
@@ -126,6 +111,7 @@ public class GameListeners implements Listener {
         if (event.getTo() == null) { return; }
         event.setCancelled(true);
         player.setVelocity(new Vector(0, 0, 0));
+        player.setFallDistance(0);
         player.teleport(event.getTo());
     }
 

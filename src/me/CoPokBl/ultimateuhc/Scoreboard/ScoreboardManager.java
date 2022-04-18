@@ -59,24 +59,22 @@ public class ScoreboardManager {
         // border
         Score border = obj.getScore(ChatColor.YELLOW + "WorldBorder: " + (int) player.getWorld().getWorldBorder().getSize());
         border.setScore(6);
-        // pvp
-        String pvpValue;
-        if (Main.gameManager.PvpEnabled) {
-            pvpValue = "Enabled";
-        } else {
-            pvpValue = Utils.GetTime(Main.gameManager.TimeToPvp - Main.gameManager.gameLoopTimer);
-        }
-        Score pvpStatus = obj.getScore(ChatColor.YELLOW + "PVP: " + pvpValue);
-        pvpStatus.setScore(5);
-        //meetup
-        String meetupValue;
-        if (Main.gameManager.MeetupEnabled) {
-            meetupValue = "Enabled";
-        } else {
-            meetupValue = Utils.GetTime(Main.gameManager.TimeToMeetup - Main.gameManager.gameLoopTimer);
-        }
-        Score meetupStatus = obj.getScore(ChatColor.YELLOW + "Meetup: " + meetupValue);
+        // elapsed
+        Score meetupStatus = obj.getScore(ChatColor.YELLOW + "Time Elapsed: " + Utils.GetTime(Main.gameManager.gameLoopTimer));
         meetupStatus.setScore(4);
+        // next event
+        String nextEventText;
+        if (Main.gameManager.Events.length == 0) {
+            nextEventText = "No More Events";
+        } else {
+            if (Main.gameManager.NextEvent == null) {
+                nextEventText = "No More Events";
+            } else {
+                nextEventText = Main.gameManager.NextEvent.name + " in " + Utils.GetTime(Main.gameManager.NextEvent.time - Main.gameManager.gameLoopTimer) + " seconds";
+            }
+        }
+        Score pvpStatus = obj.getScore(ChatColor.YELLOW + nextEventText);
+        pvpStatus.setScore(5);
         // dead or alive
         if (Utils.IsPlayerAlive(player)) {
             Score doa = obj.getScore(ChatColor.GREEN + "" + ChatColor.BOLD + "You Are Alive");

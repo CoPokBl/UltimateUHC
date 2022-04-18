@@ -72,4 +72,11 @@ public class Recipes {
         recipe.setIngredient('w', Material.BROWN_WOOL);
         return recipe;
     }
+
+    public ShapedRecipe getShapedRecipe(ItemStack item, NamespacedKey key) {
+        if (Main.SpigotVersion == 8) {
+
+        }
+        return new ShapedRecipe(key, item);
+    }
 }

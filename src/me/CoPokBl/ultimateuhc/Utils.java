@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 import java.util.Objects;
@@ -111,6 +112,39 @@ public class Utils {
             if (p.getUUID().equals(player.getUniqueId())) return true;
         }
         return false;
+    }
+
+    public static boolean IsPlayerDead(Player player) {
+        for (UhcPlayer p : Main.gameManager.DeadPlayers) {
+            if (p.getUUID().equals(player.getUniqueId())) return true;
+        }
+        return false;
+    }
+
+    public static void RemovePlayerFromAlive(Player player) {
+        for (UhcPlayer p : Main.gameManager.AlivePlayers) {
+            if (p.getUUID().equals(player.getUniqueId())) {
+                Main.gameManager.AlivePlayers.remove(p);
+                return;
+            }
+        }
+    }
+
+    public static void RemovePlayerFromAlive(UhcPlayer player) {
+        for (UhcPlayer p : Main.gameManager.AlivePlayers) {
+            if (p.getUUID().equals(player.getUUID())) {
+                Main.gameManager.AlivePlayers.remove(p);
+                return;
+            }
+        }
+    }
+
+    public static boolean IsLocationInsideBorder(Location location) {
+        World world = location.getWorld();
+        double wbSize = world.getWorldBorder().getSize()/2;
+        double x = location.getX();
+        double z = location.getZ();
+        return x > -wbSize && x < wbSize && z > -wbSize && z < wbSize;
     }
 
 }

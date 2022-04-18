@@ -223,9 +223,16 @@ public class NonTabCommands implements CommandExecutor {
                 sender.sendMessage(ChatColor.RED + "Player Not Found!");
                 return true;
             }
-            target.addPotionEffect((new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 100, 255)));
             World uhc = Bukkit.getWorld("uhc");
+            if (uhc == null) {
+                sender.sendMessage(ChatColor.RED + "Failed: UHC World Not Found!");
+                return true;
+            }
             Location loc = Utils.GetRandomSpawn(uhc);
+            if (loc == null) {
+                sender.sendMessage(ChatColor.RED + "Failed: Couldn't find a safe location to teleport the player");
+                return true;
+            }
             target.teleport(loc);
             target.sendMessage(ChatColor.GREEN + "You Have Been Teleported To A Random Location!");
             // set the block below the target to stone

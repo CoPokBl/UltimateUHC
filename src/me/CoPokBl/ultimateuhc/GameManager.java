@@ -2,9 +2,11 @@ package me.CoPokBl.ultimateuhc;
 
 import me.CoPokBl.ultimateuhc.EventListeners.WorldProtections;
 import me.CoPokBl.ultimateuhc.Interfaces.Scenario;
+import me.CoPokBl.ultimateuhc.Interfaces.UhcEvent;
 import me.CoPokBl.ultimateuhc.Interfaces.UhcEventType;
 import me.CoPokBl.ultimateuhc.OverrideTypes.UhcPlayer;
 import org.bukkit.*;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -16,13 +18,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import static me.CoPokBl.ultimateuhc.Main.gameManager;
 import static me.CoPokBl.ultimateuhc.Main.scoreboardManager;
 
 public class GameManager {
     public final List<UhcPlayer> AlivePlayers = new CopyOnWriteArrayList<>();
     public final List<UhcPlayer> DeadPlayers = new ArrayList<>();
-    public final HashMap<UhcPlayer, ItemStack[]> OfflinePlayerInventories = new HashMap<>();
-    public final HashMap<UhcPlayer, Location> OfflinePlayerLocations = new HashMap<>();
+    public final HashMap<String, ItemStack[]> OfflinePlayerInventories = new HashMap<>();  // UUID, items
+    public final HashMap<String, Location> OfflinePlayerLocations = new HashMap<>();  // UUID, items
+    public final HashMap<String, LivingEntity> OfflinePlayerEntities = new HashMap<>();  // UUID, entity
     public List<Scenario> Scenarios = new ArrayList<>();
     public Boolean PvpEnabled = false;
     public Boolean InGame = false;
@@ -32,6 +36,9 @@ public class GameManager {
     public int TimeToPvp;
     public String WorldName;
     public Integer ShutdownOnGameEndTaskId = null;
+    public OfflinePlayersManager OfflinePlayersManager = new OfflinePlayersManager();
+    public UhcEvent[] Events;
+    public UhcEvent NextEvent;
 
     public void SendPlayer(Player p) {
         scoreboardManager.CreateScoreboard(p);
@@ -47,7 +54,7 @@ public class GameManager {
                 p.sendMessage(ChatColor.GREEN + "You have rejoined the game.");
                 return;
             }
-            if (!PvpEnabled && Main.plugin.getConfig().getBoolean("allowLateJoin") && !DeadPlayers.contains(new UhcPlayer(p))) {
+            if (!PvpEnabled && Main.plugin.getConfig().getBoolean("allowLateJoin") && !Utils.IsPlayerDead(p)) {
                 // let them join
                 JoinPlayerToGame(p);
                 p.sendMessage(ChatColor.GREEN + "You have joined the game late.");
@@ -77,6 +84,14 @@ public class GameManager {
 
         // Teleport the player within the bounds of the world border
         Location loc = Utils.GetRandomSpawn(uhc);
+        if (loc == null) {
+            if (Main.plugin.getConfig().getBoolean("sendPlayersOnJoin")){
+                p.kickPlayer(ChatColor.RED + "Unfortunately, we couldn't find a safe spawn location. You can either try again or contact the server staff.");
+                return;
+            }
+            p.sendMessage(ChatColor.RED + "Unfortunately, we couldn't find a safe spawn location. You can either try again or contact the server staff.");
+            return;
+        }
         p.teleport(loc);
 
         // set the block below the player to stone
@@ -86,6 +101,7 @@ public class GameManager {
             @Override
             public void run() {
                 p.setGameMode(GameMode.SURVIVAL);
+                p.getInventory().clear();
             }
         }.runTaskLater(Main.plugin, 20);
 
@@ -95,25 +111,22 @@ public class GameManager {
 
     }
 
-    public void SetupPlayer(Player player) {
+    public void SetupPlayer(Player p) {
         // remove effects
-        for (UhcPlayer up : AlivePlayers) {
-            Player p = up.getPlayer();
-            for (PotionEffect effect : p.getActivePotionEffects()) {
-                p.removePotionEffect(effect.getType());
-            }
-            p.getInventory().clear();
+        for (PotionEffect effect : p.getActivePotionEffects()) {
+            p.removePotionEffect(effect.getType());
         }
-        for (Scenario scenario : Scenarios) { scenario.SetupPlayer(player); }
+        p.getInventory().clear();
+        for (Scenario scenario : Scenarios) { scenario.SetupPlayer(p); }
         if (!Main.plugin.getConfig().getBoolean("giveBook")) return;
         ItemStack book = new ItemStack(Material.BOOK);
-        player.getInventory().addItem(book);
+        p.getInventory().addItem(book);
     }
 
 
     public void StartUhc() {
-        for (Player online : Bukkit.getOnlinePlayers()) {
-            SetupPlayer(online);
+        for (UhcPlayer online : AlivePlayers) {
+            SetupPlayer(online.getPlayer());
         }
         InGame = true;
         World uhc = Bukkit.getWorld(WorldName);
@@ -139,26 +152,33 @@ public class GameManager {
         StartGameLoop();  // Start the game
 
         for (Scenario scenario : Scenarios) { scenario.UhcStart(); }  // Let the scenarios know the game has started
+        OfflinePlayersManager.StartOfflinePlayerBorderCheck();
     }
 
-    public void KillOffline() {
-        World uhc = Bukkit.getWorld(WorldName);
-        for (UhcPlayer p : AlivePlayers) {
-            Bukkit.broadcastMessage(p.getName() + " isOffline: " + !p.isOnline());
-            if (!p.isOnline()) {
-                AlivePlayers.remove(p);
-                DeadPlayers.add(p);
-
-                // Drop their items
-                for (ItemStack item : OfflinePlayerInventories.get(p)) {
-                    if (item == null) continue;
-                    uhc.dropItemNaturally(OfflinePlayerLocations.get(p), item);
-                    Bukkit.broadcastMessage(ChatColor.RED + "Player " + p.getName() + " died and dropped " + item.getAmount() + " " + item.getType());
+    public void WinCheck() {
+        if (!(gameManager.AlivePlayers.size() == 1 && gameManager.InGame)) {
+            return;
+        }
+        // run win
+        final Player winner = gameManager.AlivePlayers.get(0).getPlayer();
+        Bukkit.broadcastMessage(ChatColor.GREEN + winner.getDisplayName() + " has won the UHC!!!!");
+        winner.sendTitle(ChatColor.RED + "You Have Won The UHC!",  "", 10, 20*5, 10);
+        if (Main.plugin.getConfig().getBoolean("restartServerOnCompletion")) {
+            int secondsToRestart = Main.plugin.getConfig().getInt("restartServerTime");
+            gameManager.ShutdownOnGameEndTaskId = Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, () -> {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), Main.plugin.getConfig().getString("restartCommand"));
+            }, 20L * secondsToRestart);
+            Bukkit.broadcastMessage(ChatColor.RED + "The server will restart in " + secondsToRestart + " seconds!");
+            // tell all the operators to type /uhccancelrestart to cancel the restart
+            Bukkit.getOnlinePlayers().forEach(player -> {
+                if (player.isOp()) {
+                    player.sendMessage(ChatColor.RED + "Type /uhccancelrestart to cancel the restart");
                 }
-                Bukkit.broadcastMessage(p.getName() + "died due to being offline.");
-            }
+            });
         }
     }
+
+    public String t(String mes) { return ChatColor.translateAlternateColorCodes('&', mes); }
 
     private void StartGameLoop() {
         BukkitScheduler scheduler = Bukkit.getScheduler();
@@ -166,42 +186,126 @@ public class GameManager {
         int timeToBorder = Main.plugin.getConfig().getInt("secondsToShrink");
         scheduler.scheduleSyncRepeatingTask(Main.plugin, () -> {
 
-            // runs every 1 seconds
+            // runs every second
             gameLoopTimer++;
 
-            if (gameLoopTimer >= timeToBorder && !borderHasShrunk) {
-                // shrink the border
-                World uhc = Bukkit.getWorld(WorldName);
-                uhc.getWorldBorder().setSize(Main.plugin.getConfig().getInt("borderMinSize"), Main.plugin.getConfig().getInt("secondsToBorderMin"));
+            // events
+            World uhc = Bukkit.getWorld(WorldName);
+            if (uhc == null) {
+                // um wtf
+                Bukkit.getLogger().severe(
+                        "Uhc world is null, failed to start uhc. Please restart the server. " +
+                                "If this error persists, contact CoPokBl#9451 on Discord.");
+                return;
             }
-            if (gameLoopTimer >= Main.plugin.getConfig().getInt("secondsToPvp") && !PvpEnabled) {
-                // pvp
 
-                // kill players who are not in the game if things
-                if (!Main.plugin.getConfig().getBoolean("allowRejoin")) {
-                    KillOffline();
+            UhcEvent nextEvent = null;
+            for (UhcEvent event : Events) {
+                if (event.hasRun) continue;
+                int currentNextEventTime;
+                if (nextEvent == null) {
+                    currentNextEventTime = 999999;
+                } else {
+                    currentNextEventTime = nextEvent.time;
                 }
-
-                PvpEnabled = true;
-                for (Player online : Bukkit.getOnlinePlayers()) {
-                    online.sendTitle(ChatColor.RED + "PVP is Now Enabled!", ChatColor.GREEN + "", 10, 20*3, 10);
+                if (event.time - gameLoopTimer < currentNextEventTime) {
+                    nextEvent = event;
                 }
-
-                for (Scenario scenario : Scenarios) {
-                    scenario.UhcEvent(UhcEventType.Pvp);
+                if (event.time > gameLoopTimer) continue;
+                // run the event
+                if (event.message != null) {
+                    Bukkit.broadcastMessage(t(event.message));
                 }
+                boolean runTitle = false;
+                String title = "";
+                String subtitle = "";
+                if (event.title != null) {
+                    runTitle = true;
+                    title = t(event.title);
+                }
+                if (event.subtitle != null) {
+                    runTitle = true;
+                    subtitle = t(event.subtitle);
+                }
+                if (runTitle) {
+                    for (Player player : Bukkit.getOnlinePlayers()) {
+                        player.sendTitle(title, subtitle, 10, 20*3, 10);
+                    }
+                }
+                if (event.command != null) {
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), event.command);
+                }
+                boolean runBorder = false;
+                Integer borderSize = null;
+                int borderTime = 0;
+                if (event.borderSize != null) {
+                    runBorder = true;
+                    borderSize = event.borderSize;
+                }
+                if (event.borderTime != null) {
+                    runBorder = true;
+                    borderTime = event.borderTime;
+                }
+                if (runBorder && (borderSize != null)) {
+                    uhc.getWorldBorder().setSize(borderSize, borderTime);
+                }
+                if (event.pvp != null) {
+                    PvpEnabled = event.pvp;
+                    if (PvpEnabled) {
+                        if (!Main.plugin.getConfig().getBoolean("allowRejoin")) OfflinePlayersManager.KillOffline();
+                        for (Scenario scenario : Scenarios) {
+                            scenario.UhcEvent(UhcEventType.Pvp);
+                        }
+                    }
+                }
+                if (event.meetup != null) {
+                    MeetupEnabled = event.meetup;
+                    if (MeetupEnabled) {
+                        for (Scenario scenario : Scenarios) {
+                            scenario.UhcEvent(UhcEventType.Meetup);
+                        }
+                    }
+                }
+                event.hasRun = true;
+                Bukkit.getLogger().info("UhcEvent " + event.name + " has run");
             }
-            if (gameLoopTimer >= Main.plugin.getConfig().getInt("secondsToMeetup") && !MeetupEnabled) {
-                // meetup
-                MeetupEnabled = true;
-                for (Player online : Bukkit.getOnlinePlayers()) {
-                    online.sendTitle(ChatColor.RED + "It Is Now Meetup!",  "Goto 0, 0! You Must Stay Above Ground!", 10, 20*3, 10);
-                }
+            NextEvent = nextEvent;
 
-                for (Scenario scenario : Scenarios) {
-                    scenario.UhcEvent(UhcEventType.Meetup);
-                }
-            }
+            // border
+//            if (gameLoopTimer >= timeToBorder && !borderHasShrunk) {
+//                // shrink the border
+//                World uhc = Bukkit.getWorld(WorldName);
+//                uhc.getWorldBorder().setSize(Main.plugin.getConfig().getInt("borderMinSize"), Main.plugin.getConfig().getInt("secondsToBorderMin"));
+//            }
+//
+//            // pvp
+//            if (gameLoopTimer >= Main.plugin.getConfig().getInt("secondsToPvp") && !PvpEnabled) {
+//                // kill players who are not in the game if things
+//                if (!Main.plugin.getConfig().getBoolean("allowRejoin")) {
+//                    OfflinePlayersManager.KillOffline();
+//                }
+//
+//                PvpEnabled = true;
+//                for (Player online : Bukkit.getOnlinePlayers()) {
+//                    online.sendTitle(ChatColor.RED + "PVP is Now Enabled!", ChatColor.GREEN + "", 10, 20*3, 10);
+//                }
+//
+//                for (Scenario scenario : Scenarios) {
+//                    scenario.UhcEvent(UhcEventType.Pvp);
+//                }
+//            }
+//
+//            // meetup
+//            if (gameLoopTimer >= Main.plugin.getConfig().getInt("secondsToMeetup") && !MeetupEnabled) {
+//                MeetupEnabled = true;
+//                for (Player online : Bukkit.getOnlinePlayers()) {
+//                    online.sendTitle(ChatColor.RED + "It Is Now Meetup!",  "Goto 0, 0! You Must Stay Above Ground!", 10, 20*3, 10);
+//                }
+//
+//                for (Scenario scenario : Scenarios) {
+//                    scenario.UhcEvent(UhcEventType.Meetup);
+//                }
+//            }
 
 
         }, 0, 20);

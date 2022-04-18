@@ -2,17 +2,49 @@
 #                     EVENTS                         #
 # -------------------------------------------------- #
 
-# Seconds before PvP is enabled
-secondsToPvp: 600
-# Seconds before players will be required to stay above ground and fight
-# Set to large number to disable
-secondsToMeetup: 1000
-# Seconds before world border will start shrinking
-secondsToShrink: 300
-# Seconds before world border will reach its smallest size
-secondsToBorderMin: 1500
-# Border size when it reaches its smallest size
-borderMinSize: 10
+# Events
+customEvents:
+  # This is a basic event example
+  # All messages support color codes using the '&' character
+  myEvent:  # Event name, can be anything
+    # Time in seconds before event is triggered (REQUIRED)
+    time: 5000
+    # All the following are optional:
+    # If this is false then the event will not be triggered, if it isn't set then the event will run
+    enabled: false
+    # Command to execute when event is triggered, the command is run as console
+    command: 'mycommand'
+    # Message to send to all players when event is triggered
+    message: 'mymessage'
+    # Title to send to all players when event is triggered
+    title: 'This will be displayed as a title'
+    # Subtitle to send to all players when event is triggered
+    subtitle: 'This will be displayed as a subtitle'
+    # Change PvP status when event is triggered
+    pvp: true
+    # Change Meetup status when event is triggered
+    meetup: false
+    # Change world border when event is triggered
+    # Format is SIZE/SECONDS, SIZE is the size the border should goto, SECONDS is how long it should take to get there
+    border: 10/100
+
+  # Some recommended events:
+  # If you remove them then some scenarios will not work, for example SkyHigh only makes people take damage at Meetup
+  # The scenarios will still register PvP and Meetup as long as an event has pvp: true or meetup: true in it
+  PvP:
+    time: 500
+    message: '&cPvP is now enabled!'
+    title: '&4PvP is Now Enabled!'
+    pvp: true
+    border: 10/1500
+
+  Meetup:
+    time: 1000
+    message: '&cIt is now Meetup! Stay above ground and fight!'
+    title: '&4Meetup is Now Enabled!'
+    subtitle: 'Goto to 0, 0! You Must Stay Above Ground!'
+    meetup: true
+
 
 # -------------------------------------------------- #
 #               UHC WORLD SETTINGS                   #
@@ -54,7 +86,8 @@ enableGravelToArrow: true
 enable4WoolToString: true
 # Allow players to rejoin the game if they leave during the UHC (Only enable if you know everyone in the game)
 # If allowLateJoin is true then they will be able to rejoin before PvP is enabled regardless of this setting
-allowRejoin: false # Not working yet
+# If this is false and allowLateJoin is true then all offline players will be killed when PvP is enabled
+allowRejoin: true
 # Allow late joins to the UHC (They will only be able to join before PvP is enabled)
 allowLateJoin: true
 # Whether to place a block below players when they are scattered (This stops them being spawned somewhere dangerous)

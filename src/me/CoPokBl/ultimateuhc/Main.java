@@ -7,18 +7,21 @@ import me.CoPokBl.ultimateuhc.EventListeners.GameListeners;
 import me.CoPokBl.ultimateuhc.EventListeners.GoldenHeads;
 import me.CoPokBl.ultimateuhc.EventListeners.WorldProtections;
 import me.CoPokBl.ultimateuhc.Interfaces.Scenario;
+import me.CoPokBl.ultimateuhc.Interfaces.UhcEvent;
 import me.CoPokBl.ultimateuhc.Scoreboard.ScoreboardManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class Main extends JavaPlugin {
 	public static int SpigotVersion;
@@ -32,6 +35,7 @@ public class Main extends JavaPlugin {
 		plugin = this;
 		gameManager = new GameManager();
 		scoreboardManager = new ScoreboardManager();
+		gameManager.OfflinePlayersManager = new OfflinePlayersManager();
 
 		// thing
 		saveDefaultConfig();
@@ -48,6 +52,62 @@ public class Main extends JavaPlugin {
 				gameManager.Scenarios.add(scen);
 				getLogger().info("Enabled scenario: " + scenario);
 			}
+		}
+
+		// Load events from config
+		List<UhcEvent> events = new ArrayList<>();
+		ConfigurationSection eventsSection = getConfig().getConfigurationSection("customEvents");
+		if (eventsSection == null) {
+			getLogger().warning("No custom events section found in config!");
+			gameManager.Events = new UhcEvent[0];
+		} else {
+			Set<String> keys = eventsSection.getKeys(false);
+			for (String key : keys) {
+				if (!eventsSection.isConfigurationSection(key)) {
+					continue;
+				}
+				ConfigurationSection eventSection = eventsSection.getConfigurationSection(key);
+				if (eventSection == null) continue;
+				if (!eventSection.getBoolean("enabled", true)) continue;
+				UhcEvent event = new UhcEvent();
+				event.name = key;
+				if (eventSection.contains("time")) {
+					event.time = eventSection.getInt("time");
+				} else {
+					throw new IllegalArgumentException("Event " + key + " does not have a time value set! Please set it in the config.");
+				}
+				if (eventSection.contains("command")) {
+					event.command = eventSection.getString("command");
+				}
+				if (eventSection.contains("message")) {
+					event.message = eventSection.getString("message");
+				}
+				if (eventSection.contains("title")) {
+					event.title = eventSection.getString("title");
+				}
+				if (eventSection.contains("subtitle")) {
+					event.subtitle = eventSection.getString("subtitle");
+				}
+				if (eventSection.contains("pvp")) {
+					event.pvp = eventSection.getBoolean("pvp");
+				}
+				if (eventSection.contains("meetup")) {
+					event.meetup = eventSection.getBoolean("meetup");
+				}
+				if (eventSection.contains("border")) {
+					String border = eventSection.getString("border");
+					// split it by '/' and get the first and second value
+					String[] split = border.split("/");
+					if (split.length != 2) {
+						throw new IllegalArgumentException("Border value for event " + key + " is not in the correct format! Please set it in the config.");
+					}
+					event.borderSize = Integer.parseInt(split[0]);
+					event.borderTime = Integer.parseInt(split[1]);
+				}
+				events.add(event);
+				getLogger().info("Loaded custom event: " + key);
+			}
+			gameManager.Events = events.toArray(new UhcEvent[0]);
 		}
 
 		// Get spigot version
@@ -81,6 +141,7 @@ public class Main extends JavaPlugin {
 		Bukkit.getServer().getPluginManager().registerEvents(new GameListeners(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new GoldenHeads(), this);
 		Bukkit.getServer().getPluginManager().registerEvents(new WorldProtections(), this);
+		Bukkit.getServer().getPluginManager().registerEvents(new OfflinePlayersManager(), this);
 
 		// Register the recipes
 		new Recipes().registerRecipes();
