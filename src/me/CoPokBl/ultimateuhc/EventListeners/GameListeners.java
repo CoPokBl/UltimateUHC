@@ -60,6 +60,10 @@ public class GameListeners implements Listener {
         MainBoard board = new MainBoard(event.getPlayer().getUniqueId());
         if (board.hasID())
             board.stop();
+        if (!gameManager.InGame) {
+            gameManager.AlivePlayers.remove(new UhcPlayer(event.getPlayer()));
+            return;
+        }
         if (Main.plugin.getConfig().getBoolean("allowRejoin") ||
                 (Main.plugin.getConfig().getBoolean("allowLateJoin") && !gameManager.PvpEnabled)) {
             // They can rejoin

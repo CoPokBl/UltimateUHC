@@ -32,8 +32,6 @@ public class GameManager {
     public Boolean InGame = false;
     public Boolean MeetupEnabled = false;
     public int gameLoopTimer = 0;
-    public int TimeToMeetup;
-    public int TimeToPvp;
     public String WorldName;
     public Integer ShutdownOnGameEndTaskId = null;
     public OfflinePlayersManager OfflinePlayersManager = new OfflinePlayersManager();
@@ -95,7 +93,12 @@ public class GameManager {
         p.teleport(loc);
 
         // set the block below the player to stone
-        uhc.getBlockAt(loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ()).setType(Material.valueOf(Main.plugin.getConfig().getString("teleportBlock")));
+        try {
+            Material mat = Material.valueOf(Main.plugin.getConfig().getString("teleportBlock"));
+            uhc.getBlockAt(loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ()).setType(mat);
+        } catch (IllegalArgumentException e) {
+            // Don't place the block
+        }
 
         new BukkitRunnable() {
             @Override
