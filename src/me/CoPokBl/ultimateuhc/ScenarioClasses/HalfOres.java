@@ -1,6 +1,7 @@
 package me.CoPokBl.ultimateuhc.ScenarioClasses;
 
 import me.CoPokBl.ultimateuhc.Interfaces.ScenarioListener;
+import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -16,10 +17,11 @@ public class HalfOres extends ScenarioListener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onBlockBreak(BlockBreakEvent event) {
-        int ran = 2;
+        int ran;
         ran = (int) GetRandomNum(0, 2);
         if (ran == 1) {
-            event.setDropItems(false);
+            event.setCancelled(true);
+            event.getBlock().setType(Material.AIR);
         }
     }
 

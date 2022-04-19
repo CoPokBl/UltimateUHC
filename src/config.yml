@@ -95,6 +95,7 @@ allowLateJoin: true
 placeBlockBelowPlayers: true
 # What block to place below players when they are scattered (This stops them being spawned somewhere dangerous)
 # It is highly recommended that you don't set this to a flammable block
+# If this is set to an invalid block then it won't place a block, so if you don't want a block set it to 'null'
 teleportBlock: STONE
 # Whether to give players a book when the UHC starts
 giveBook: true

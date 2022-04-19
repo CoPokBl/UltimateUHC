@@ -15,7 +15,9 @@ public class GoldenHeads implements Listener {
     public void onPlayerEatFood(PlayerItemConsumeEvent event) {
         ItemStack item = event.getItem();
         Player p = event.getPlayer();
-        if (event.getItem().getType().equals(Material.GOLDEN_APPLE) && item.getItemMeta().getDisplayName().contains("Golden Head")) {
+        if (event.getItem().getType().equals(Material.GOLDEN_APPLE) &&
+                item.getItemMeta().getDisplayName() != null &&
+                item.getItemMeta().getDisplayName().contains("Golden Head")) {
             // Player ate golden head
             p.addPotionEffect((new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 1)));
             p.addPotionEffect((new PotionEffect(PotionEffectType.ABSORPTION, 200, 3)));

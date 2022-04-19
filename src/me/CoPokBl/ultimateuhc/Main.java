@@ -1,3 +1,5 @@
+// This is a version of the plugin designed for 1.8.x in hope that it will work with 1.9+ as well
+
 package me.CoPokBl.ultimateuhc;
 
 import me.CoPokBl.ultimateuhc.Commands.NonTabCommands;
@@ -8,6 +10,7 @@ import me.CoPokBl.ultimateuhc.EventListeners.GoldenHeads;
 import me.CoPokBl.ultimateuhc.EventListeners.WorldProtections;
 import me.CoPokBl.ultimateuhc.Interfaces.Scenario;
 import me.CoPokBl.ultimateuhc.Interfaces.UhcEvent;
+import me.CoPokBl.ultimateuhc.NMS.NMSHandler;
 import me.CoPokBl.ultimateuhc.Scoreboard.ScoreboardManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -112,6 +115,12 @@ public class Main extends JavaPlugin {
 
 		// Get spigot version
 		SpigotVersion = Utils.GetVersion();
+		Bukkit.getLogger().info("Spigot version: " + SpigotVersion);
+		try {
+			NMSHandler.getInstance().Init(SpigotVersion);  // Init NMS
+		} catch (IllegalArgumentException e) {
+			getLogger().severe("Failed to load NMS. Unsupported version: 1." + SpigotVersion);
+		}
 
 		// register commands
 		this.getCommand("uhcscenario").setExecutor(new Scenarios());

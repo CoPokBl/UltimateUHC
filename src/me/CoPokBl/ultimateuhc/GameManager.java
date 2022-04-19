@@ -32,8 +32,6 @@ public class GameManager {
     public Boolean InGame = false;
     public Boolean MeetupEnabled = false;
     public int gameLoopTimer = 0;
-    public int TimeToMeetup;
-    public int TimeToPvp;
     public String WorldName;
     public Integer ShutdownOnGameEndTaskId = null;
     public OfflinePlayersManager OfflinePlayersManager = new OfflinePlayersManager();
@@ -95,7 +93,12 @@ public class GameManager {
         p.teleport(loc);
 
         // set the block below the player to stone
-        uhc.getBlockAt(loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ()).setType(Material.valueOf(Main.plugin.getConfig().getString("teleportBlock")));
+        try {
+            Material mat = Material.valueOf(Main.plugin.getConfig().getString("teleportBlock"));
+            uhc.getBlockAt(loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ()).setType(mat);
+        } catch (IllegalArgumentException e) {
+            // Don't place the block
+        }
 
         new BukkitRunnable() {
             @Override
@@ -137,8 +140,8 @@ public class GameManager {
                          "If this error persists, contact CoPokBl#9451 on Discord.");
             return;
         }
-        uhc.setGameRule(GameRule.NATURAL_REGENERATION, false);
-        uhc.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true);
+        uhc.setGameRuleValue("naturalRegeneration", "false");
+        // uhc.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true); This isn't a thing in 1.8
         uhc.getWorldBorder().setCenter(new Location(uhc, 0, 100, 0));
         uhc.getWorldBorder().setSize(Main.plugin.getConfig().getInt("worldBorderSize"));
         for (Player online : Bukkit.getOnlinePlayers()) {
@@ -146,7 +149,7 @@ public class GameManager {
             online.setFoodLevel(20);
 
             // display title to all players
-            online.sendTitle(ChatColor.GREEN + "The UHC Has Begun!", ChatColor.GREEN + "", 10, 20*3, 10);
+            online.sendTitle(ChatColor.GREEN + "The UHC Has Begun!", ChatColor.GREEN + "");
         }
         WorldProtections.NoInteract.clear();  // Allow players to interact
         StartGameLoop();  // Start the game
@@ -162,12 +165,13 @@ public class GameManager {
         // run win
         final Player winner = gameManager.AlivePlayers.get(0).getPlayer();
         Bukkit.broadcastMessage(ChatColor.GREEN + winner.getDisplayName() + " has won the UHC!!!!");
-        winner.sendTitle(ChatColor.RED + "You Have Won The UHC!",  "", 10, 20*5, 10);
+        winner.sendTitle(ChatColor.RED + "You Have Won The UHC!", "");
         if (Main.plugin.getConfig().getBoolean("restartServerOnCompletion")) {
             int secondsToRestart = Main.plugin.getConfig().getInt("restartServerTime");
-            gameManager.ShutdownOnGameEndTaskId = Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, () -> {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), Main.plugin.getConfig().getString("restartCommand"));
-            }, 20L * secondsToRestart);
+            gameManager.ShutdownOnGameEndTaskId = Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, () ->
+                    Bukkit.dispatchCommand(
+                            Bukkit.getConsoleSender(),
+                            Main.plugin.getConfig().getString("restartCommand")), 20L * secondsToRestart);
             Bukkit.broadcastMessage(ChatColor.RED + "The server will restart in " + secondsToRestart + " seconds!");
             // tell all the operators to type /uhccancelrestart to cancel the restart
             Bukkit.getOnlinePlayers().forEach(player -> {
@@ -229,7 +233,7 @@ public class GameManager {
                 }
                 if (runTitle) {
                     for (Player player : Bukkit.getOnlinePlayers()) {
-                        player.sendTitle(title, subtitle, 10, 20*3, 10);
+                        player.sendTitle(title, subtitle);
                     }
                 }
                 if (event.command != null) {
@@ -270,43 +274,6 @@ public class GameManager {
                 Bukkit.getLogger().info("UhcEvent " + event.name + " has run");
             }
             NextEvent = nextEvent;
-
-            // border
-//            if (gameLoopTimer >= timeToBorder && !borderHasShrunk) {
-//                // shrink the border
-//                World uhc = Bukkit.getWorld(WorldName);
-//                uhc.getWorldBorder().setSize(Main.plugin.getConfig().getInt("borderMinSize"), Main.plugin.getConfig().getInt("secondsToBorderMin"));
-//            }
-//
-//            // pvp
-//            if (gameLoopTimer >= Main.plugin.getConfig().getInt("secondsToPvp") && !PvpEnabled) {
-//                // kill players who are not in the game if things
-//                if (!Main.plugin.getConfig().getBoolean("allowRejoin")) {
-//                    OfflinePlayersManager.KillOffline();
-//                }
-//
-//                PvpEnabled = true;
-//                for (Player online : Bukkit.getOnlinePlayers()) {
-//                    online.sendTitle(ChatColor.RED + "PVP is Now Enabled!", ChatColor.GREEN + "", 10, 20*3, 10);
-//                }
-//
-//                for (Scenario scenario : Scenarios) {
-//                    scenario.UhcEvent(UhcEventType.Pvp);
-//                }
-//            }
-//
-//            // meetup
-//            if (gameLoopTimer >= Main.plugin.getConfig().getInt("secondsToMeetup") && !MeetupEnabled) {
-//                MeetupEnabled = true;
-//                for (Player online : Bukkit.getOnlinePlayers()) {
-//                    online.sendTitle(ChatColor.RED + "It Is Now Meetup!",  "Goto 0, 0! You Must Stay Above Ground!", 10, 20*3, 10);
-//                }
-//
-//                for (Scenario scenario : Scenarios) {
-//                    scenario.UhcEvent(UhcEventType.Meetup);
-//                }
-//            }
-
 
         }, 0, 20);
     }
