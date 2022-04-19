@@ -20,12 +20,25 @@ public class CustomDrops implements Listener {
 
         if (Main.plugin.getConfig().getBoolean("enableAppleDrop")) {
             Material block = e.getBlock().getType();
-            if (block.equals(Material.LEAVES) ||
-                    block.equals(Material.LEAVES_2)) {
-                Player player = e.getPlayer();
-                World world = player.getWorld();
-                ItemStack apple = new ItemStack(Material.APPLE);
-                world.dropItemNaturally(e.getBlock().getLocation(), apple);
+            Player player = e.getPlayer();
+            World world = player.getWorld();
+            ItemStack apple = new ItemStack(Material.APPLE);
+            if (Main.SpigotVersion <= 12) {
+                if (block.equals(Material.LEAVES) ||
+                    block.equals(Material.LEAVES_2)
+                ) {
+                    world.dropItemNaturally(e.getBlock().getLocation(), apple);
+                }
+            } else {
+                if (block.equals(Material.valueOf("OAK_LEAVES")) ||
+                    block.equals(Material.valueOf("SPRUCE_LEAVES")) ||
+                    block.equals(Material.valueOf("BIRCH_LEAVES")) ||
+                    block.equals(Material.valueOf("JUNGLE_LEAVES")) ||
+                    block.equals(Material.valueOf("ACACIA_LEAVES")) ||
+                    block.equals(Material.valueOf("DARK_OAK_LEAVES"))
+                ) {
+                    world.dropItemNaturally(e.getBlock().getLocation(), apple);
+                }
             }
         }
 

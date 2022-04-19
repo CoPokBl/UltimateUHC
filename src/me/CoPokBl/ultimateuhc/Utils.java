@@ -71,11 +71,12 @@ public class Utils {
 
     public static int GetVersion() {
         String versionS = Bukkit.getVersion();
+        Bukkit.getLogger().info("Spigot's version string: " + versionS);
 
-        for (int i = 0; i < 99; i++) {
-            if (versionS.contains("1." + i))  return i;
-        }
-        return 100;
+        String ver = versionS.split(" ")[2];
+        ver = ver.replace(')', ' ');
+        ver = ver.split("\\.")[1];
+        return Integer.parseInt(ver);
     }
 
     public static double GetRandomNum(double min, double max) {

@@ -1,21 +1,25 @@
 package me.CoPokBl.ultimateuhc;
 
+import me.CoPokBl.ultimateuhc.NMS.NMSHandler;
 import me.CoPokBl.ultimateuhc.OverrideTypes.UhcPlayer;
-import net.minecraft.server.v1_8_R3.EntityLiving;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftLivingEntity;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.VillagerAcquireTradeEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.metadata.MetadataValue;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -106,14 +110,23 @@ public class OfflinePlayersManager implements Listener {
 
         // make entity livingentity
         LivingEntity entityLiving = (LivingEntity) entity;
-        EntityLiving handle = ((CraftLivingEntity) entity).getHandle();
-        handle.getDataWatcher().watch(15, (byte) (1));
+        entityLiving.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 999999, 999999));
         entityLiving.setRemoveWhenFarAway(false);
         entityLiving.setHealth(event.getPlayer().getHealth());
         entityLiving.setCanPickupItems(false);
 
         gameManager.OfflinePlayerEntities.put(event.getPlayer().getUniqueId().toString(), entityLiving);
 
+    }
+
+    @EventHandler
+    public void onVillagerGetJob(VillagerAcquireTradeEvent e) {
+        for (UhcPlayer p : Main.gameManager.AlivePlayers) {
+            if (Objects.equals(e.getEntity().getCustomName(), ChatColor.BOLD + p.getName())) {
+                e.setCancelled(true);
+                return;
+            }
+        }
     }
 
     @EventHandler
