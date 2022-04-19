@@ -30,7 +30,7 @@ public class Recipes {
 
         recipe.shape(" g ", "ghg", " g ");
         recipe.setIngredient('g', Material.GOLD_INGOT);
-        recipe.setIngredient('h', Material.SKULL);
+        recipe.setIngredient('h', Material.valueOf(Main.SpigotVersion <= 12 ? "SKULL" : "PLAYER_HEAD"));
 
         return recipe;
     }
@@ -47,7 +47,7 @@ public class Recipes {
         ItemStack item = new ItemStack(Material.STRING);
         ShapedRecipe recipe = new ShapedRecipe(item);
         recipe.shape("ww", "ww");
-        recipe.setIngredient('w', Material.WOOL);
+        recipe.setIngredient('w', Material.valueOf(Main.SpigotVersion <= 12 ? "WOOL" : "WHITE_WOOL"));
         return recipe;
     }
 

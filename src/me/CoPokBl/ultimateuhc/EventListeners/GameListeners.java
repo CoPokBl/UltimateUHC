@@ -82,7 +82,7 @@ public class GameListeners implements Listener {
         p.getWorld().strikeLightningEffect(p.getLocation());
 
         // Create the head drop item
-        ItemStack head = new ItemStack(Material.SKULL);
+        ItemStack head = new ItemStack(Material.valueOf(Main.SpigotVersion <= 12 ? "SKULL" : "PLAYER_HEAD"));
 //        SkullMeta headMeta = (SkullMeta) head.getItemMeta();
 //        headMeta.setOwner(p.getName());
 //        head.setItemMeta(headMeta);
