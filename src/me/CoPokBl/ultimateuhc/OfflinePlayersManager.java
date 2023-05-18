@@ -1,5 +1,6 @@
 package me.CoPokBl.ultimateuhc;
 
+import me.CoPokBl.ultimateuhc.Interfaces.RewardType;
 import me.CoPokBl.ultimateuhc.NMS.NMSHandler;
 import me.CoPokBl.ultimateuhc.OverrideTypes.UhcPlayer;
 import org.bukkit.Bukkit;
