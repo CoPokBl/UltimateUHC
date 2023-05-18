@@ -1,6 +1,6 @@
 package me.CoPokBl.ultimateuhc;
 
-import me.CoPokBl.ultimateuhc.Interfaces.RewardType;
+import me.CoPokBl.ultimateuhc.NMS.NMSHandler;
 import me.CoPokBl.ultimateuhc.OverrideTypes.UhcPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -9,12 +9,19 @@ import org.bukkit.World;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.VillagerAcquireTradeEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import static me.CoPokBl.ultimateuhc.Main.gameManager;
@@ -100,18 +107,27 @@ public class OfflinePlayersManager implements Listener {
         World uhc = Bukkit.getWorld(Main.gameManager.WorldName);
         Entity entity = uhc.spawnEntity(event.getPlayer().getLocation(), EntityType.VILLAGER);
         entity.setCustomNameVisible(true);
-        entity.setCustomName(event.getPlayer().getName());
+        entity.setCustomName(ChatColor.BOLD + event.getPlayer().getName());
 
         // make entity livingentity
         LivingEntity entityLiving = (LivingEntity) entity;
-        entityLiving.setAI(false);
+        entityLiving.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 999999, 999999));
         entityLiving.setRemoveWhenFarAway(false);
         entityLiving.setHealth(event.getPlayer().getHealth());
         entityLiving.setCanPickupItems(false);
-        entityLiving.addScoreboardTag("UHC_OfflinePlayer_" + event.getPlayer().getUniqueId());
 
         gameManager.OfflinePlayerEntities.put(event.getPlayer().getUniqueId().toString(), entityLiving);
 
+    }
+
+    @EventHandler
+    public void onVillagerGetJob(VillagerAcquireTradeEvent e) {
+        for (UhcPlayer p : Main.gameManager.AlivePlayers) {
+            if (Objects.equals(e.getEntity().getCustomName(), ChatColor.BOLD + p.getName())) {
+                e.setCancelled(true);
+                return;
+            }
+        }
     }
 
     @EventHandler
@@ -125,8 +141,8 @@ public class OfflinePlayersManager implements Listener {
         }
 
         boolean found = false;
-        for (String tag : e.getEntity().getScoreboardTags()) {
-            if (tag.startsWith("UHC_OfflinePlayer_")) {
+        for (UhcPlayer p : Main.gameManager.AlivePlayers) {
+            if (Objects.equals(e.getEntity().getCustomName(), ChatColor.BOLD + p.getName())) {
                 found = true;
                 break;
             }
@@ -154,19 +170,15 @@ public class OfflinePlayersManager implements Listener {
 
         // check if entity has the tag
         boolean found = false;
-        String uuid = null;
-        for (String tag : e.getEntity().getScoreboardTags()) {
-            if (tag.startsWith("UHC_OfflinePlayer_")) {
+        UhcPlayer p = null;
+        for (UhcPlayer pl : Main.gameManager.AlivePlayers) {
+            if (Objects.equals(e.getEntity().getCustomName(), ChatColor.BOLD + pl.getName())) {
                 found = true;
-                uuid = tag.replace("UHC_OfflinePlayer_", "");
+                p = pl;
                 break;
             }
         }
         if (!found) return;
-
-        //String playersName = e.getEntity().getCustomName();
-        UhcPlayer p = new UhcPlayer(UUID.fromString(uuid));
-        //World uhc = e.getEntity().getWorld();
 
         if (p.isOnline()) {
             Bukkit.getLogger().severe("Player is online but their offline replacement died, what the hell happened?\n" +

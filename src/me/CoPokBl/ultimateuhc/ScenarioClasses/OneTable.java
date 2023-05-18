@@ -26,7 +26,7 @@ public class OneTable extends ScenarioListener {
         Player p = (Player) e.getWhoClicked();
         Material itemType = e.getRecipe().getResult().getType();
 
-        Material table = Material.CRAFTING_TABLE;
+        Material table = Material.WORKBENCH;
         if (!(hasMadeTable.contains(p)) && itemType.equals(table)) {
             hasMadeTable.add(p);
             p.sendMessage(ChatColor.GREEN + "You can only make one crafting table, that was your last one!");

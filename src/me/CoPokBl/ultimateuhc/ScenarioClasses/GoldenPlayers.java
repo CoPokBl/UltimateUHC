@@ -18,10 +18,10 @@ public class GoldenPlayers extends ScenarioListener {
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
-        if (event.getBlock().getType().equals(Material.DIAMOND_ORE))
-            event.setDropItems(false);
-        if (event.getBlock().getType().equals(Material.GOLD_ORE))
-            event.setDropItems(false);
+        if (event.getBlock().getType().equals(Material.DIAMOND_ORE) || event.getBlock().getType().equals(Material.GOLD_ORE)) {
+            event.setCancelled(true);
+            event.getBlock().setType(Material.AIR);
+        }
     }
 
     @EventHandler

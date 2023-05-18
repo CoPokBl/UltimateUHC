@@ -47,7 +47,7 @@ public class GameListeners implements Listener {
                 assert uhc != null;
                 Location loc = Utils.GetTopLocation(uhc, 0, 0);
                 if (loc == null) {
-                    loc.getWorld().getBlockAt(loc).setType(Material.STONE);
+                    uhc.getBlockAt(0, 255, 0).setType(Material.STONE);
                 }
                 loc = Utils.GetTopLocation(uhc, 0, 0);
                 p.teleport(loc);
@@ -64,6 +64,10 @@ public class GameListeners implements Listener {
         MainBoard board = new MainBoard(event.getPlayer().getUniqueId());
         if (board.hasID())
             board.stop();
+        if (!gameManager.InGame) {
+            gameManager.AlivePlayers.remove(new UhcPlayer(event.getPlayer()));
+            return;
+        }
         if (Main.plugin.getConfig().getBoolean("allowRejoin") ||
                 (Main.plugin.getConfig().getBoolean("allowLateJoin") && !gameManager.PvpEnabled)) {
             // They can rejoin
@@ -89,11 +93,10 @@ public class GameListeners implements Listener {
         }
 
         // Create the head drop item
-        ItemStack head = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta headMeta = (SkullMeta) head.getItemMeta();
-        assert headMeta != null;
-        headMeta.setOwningPlayer(Bukkit.getOfflinePlayer(p.getUniqueId()));
-        head.setItemMeta(headMeta);
+        ItemStack head = new ItemStack(Material.valueOf(Main.SpigotVersion <= 12 ? "SKULL" : "PLAYER_HEAD"));
+//        SkullMeta headMeta = (SkullMeta) head.getItemMeta();
+//        headMeta.setOwningPlayer(Bukkit.getOfflinePlayer(p.getUniqueId()));
+//        head.setItemMeta(headMeta);
 
         // Drop the head
         World world = p.getWorld();

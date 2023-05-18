@@ -45,7 +45,7 @@ public class ScoreboardManager {
         org.bukkit.scoreboard.ScoreboardManager manager = Bukkit.getScoreboardManager();
         Scoreboard main = manager.getNewScoreboard();
         //title
-        Objective obj = main.registerNewObjective("mainuhc-1", "dummy", ChatColor.BLUE + "<<< " + UhcName + " >>>");
+        Objective obj = main.registerNewObjective(ChatColor.BLUE + "<<< " + UhcName + " >>>", "mainuhc");
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
         // line
         Score line = obj.getScore(ChatColor.BLACK + "=================");
