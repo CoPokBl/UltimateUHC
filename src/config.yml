@@ -45,6 +45,25 @@ customEvents:
     subtitle: 'Goto to 0, 0! You Must Stay Above Ground!'
     meetup: true
 
+# -------------------------------------------------- #
+#                     Rewards                        #
+# -------------------------------------------------- #
+
+# Placeholders:
+# {player} - The player being rewarded
+rewards:
+
+  # This reward is triggered when a player gets a kill,
+  PlayerKill:
+    - "msg {player} Nice Work!"
+
+  # This reward is triggered when a player wins the game
+  GameWin:
+    - "msg {player} Yay you won!"
+
+  # This reward is triggered when a player dies
+  PlayerDeath:
+    - "msg {player} Better luck next time"
 
 # -------------------------------------------------- #
 #               UHC WORLD SETTINGS                   #

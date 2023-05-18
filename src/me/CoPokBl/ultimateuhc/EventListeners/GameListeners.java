@@ -1,7 +1,9 @@
 package me.CoPokBl.ultimateuhc.EventListeners;
 
+import me.CoPokBl.ultimateuhc.Interfaces.RewardType;
 import me.CoPokBl.ultimateuhc.Main;
 import me.CoPokBl.ultimateuhc.OverrideTypes.UhcPlayer;
+import me.CoPokBl.ultimateuhc.RewardManager;
 import me.CoPokBl.ultimateuhc.Scoreboard.MainBoard;
 import me.CoPokBl.ultimateuhc.ScenarioClasses.Zombies;
 import me.CoPokBl.ultimateuhc.Utils;
@@ -19,6 +21,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+
+import java.util.Objects;
 
 import static me.CoPokBl.ultimateuhc.Main.gameManager;
 
@@ -75,15 +79,19 @@ public class GameListeners implements Listener {
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent e) {
-        gameManager.AlivePlayers.remove(new UhcPlayer(e.getEntity().getPlayer()));
+        gameManager.AlivePlayers.remove(new UhcPlayer(Objects.requireNonNull(e.getEntity().getPlayer())));
         Utils.RemovePlayerFromAlive(e.getEntity().getPlayer());
-        gameManager.WinCheck();
         Player p = e.getEntity().getPlayer();
         p.getWorld().strikeLightningEffect(p.getLocation());
+        RewardManager.RewardPlayer(RewardType.PlayerDeath, new UhcPlayer(p));
+        if (p.getKiller() != null) {
+            RewardManager.RewardPlayer(RewardType.PlayerKill, new UhcPlayer(p.getKiller()));
+        }
 
         // Create the head drop item
         ItemStack head = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta headMeta = (SkullMeta) head.getItemMeta();
+        assert headMeta != null;
         headMeta.setOwningPlayer(Bukkit.getOfflinePlayer(p.getUniqueId()));
         head.setItemMeta(headMeta);
 

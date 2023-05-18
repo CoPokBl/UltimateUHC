@@ -54,6 +54,8 @@ public class Main extends JavaPlugin {
 			}
 		}
 
+		RewardManager.LoadRewards(getConfig());
+
 		// Load events from config
 		List<UhcEvent> events = new ArrayList<>();
 		ConfigurationSection eventsSection = getConfig().getConfigurationSection("customEvents");
@@ -190,16 +192,18 @@ public class Main extends JavaPlugin {
 		WorldManager worldManager = new WorldManager();
 		worldManager.WorldPath = Bukkit.getWorld(getConfig().getString("worldName")).getWorldFolder();
 
+		// If deleteWorldUponCompletion is true, delete the world
+		if (!getConfig().getBoolean("deleteWorldUponCompletion")) {
+			return;
+		}
+
 		// Kick all players
 		for (Player online : Bukkit.getOnlinePlayers()) {
 			online.kickPlayer(ChatColor.RED + "The server is restarting!");
 		}
 
-		// If deleteWorldUponCompletion is true, delete the world
-		if (getConfig().getBoolean("deleteWorldUponCompletion")) {
-			worldManager.IfUhcWorldExistsDelete();
-			Bukkit.getLogger().info("UHC world deleted");
-		}
+		worldManager.IfUhcWorldExistsDelete();
+		Bukkit.getLogger().info("UHC world deleted");
 
 		getLogger().info("UltimateUHC has been disabled.");
 	}

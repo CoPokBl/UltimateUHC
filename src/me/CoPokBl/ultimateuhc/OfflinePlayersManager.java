@@ -1,5 +1,6 @@
 package me.CoPokBl.ultimateuhc;
 
+import me.CoPokBl.ultimateuhc.Interfaces.RewardType;
 import me.CoPokBl.ultimateuhc.OverrideTypes.UhcPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -52,6 +53,7 @@ public class OfflinePlayersManager implements Listener {
                 if (loc == null) { Bukkit.getLogger().severe("Location doesn't exist, what the hell happened?"); continue; }
                 for (ItemStack item : gameManager.OfflinePlayerInventories.get(p.getUUID().toString())) {
                     if (item == null) continue;
+                    assert uhc != null;
                     uhc.dropItemNaturally(loc, item);
                 }
                 Bukkit.broadcastMessage(p.getName() + "died due to being offline");
@@ -162,9 +164,9 @@ public class OfflinePlayersManager implements Listener {
         }
         if (!found) return;
 
-        String playersName = e.getEntity().getCustomName();
+        //String playersName = e.getEntity().getCustomName();
         UhcPlayer p = new UhcPlayer(UUID.fromString(uuid));
-        World uhc = e.getEntity().getWorld();
+        //World uhc = e.getEntity().getWorld();
 
         if (p.isOnline()) {
             Bukkit.getLogger().severe("Player is online but their offline replacement died, what the hell happened?\n" +
@@ -181,6 +183,9 @@ public class OfflinePlayersManager implements Listener {
         }
 
         Kill(p, deathMessage);
+        if (e.getEntity().getKiller() != null) {
+            RewardManager.RewardPlayer(RewardType.PlayerKill, new UhcPlayer(e.getEntity().getKiller()));
+        }
 
         e.setDroppedExp(0);
         e.getDrops().clear();
@@ -194,7 +199,9 @@ public class OfflinePlayersManager implements Listener {
 
         Location loc = gameManager.OfflinePlayerLocations.get(p.getUUID().toString());
         if (loc == null) { Bukkit.getLogger().severe("Location doesn't exist, what the hell happened?"); return; }
+        assert uhc != null;
         uhc.strikeLightningEffect(loc);
+        RewardManager.RewardPlayer(RewardType.PlayerDeath, p);
 
         // Drop their items
         for (ItemStack item : gameManager.OfflinePlayerInventories.get(p.getUUID().toString())) {

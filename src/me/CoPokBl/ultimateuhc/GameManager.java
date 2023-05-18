@@ -16,6 +16,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static me.CoPokBl.ultimateuhc.Main.gameManager;
@@ -166,7 +167,7 @@ public class GameManager {
         if (Main.plugin.getConfig().getBoolean("restartServerOnCompletion")) {
             int secondsToRestart = Main.plugin.getConfig().getInt("restartServerTime");
             gameManager.ShutdownOnGameEndTaskId = Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, () -> {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), Main.plugin.getConfig().getString("restartCommand"));
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), Objects.requireNonNull(Main.plugin.getConfig().getString("restartCommand")));
             }, 20L * secondsToRestart);
             Bukkit.broadcastMessage(ChatColor.RED + "The server will restart in " + secondsToRestart + " seconds!");
             // tell all the operators to type /uhccancelrestart to cancel the restart
@@ -182,8 +183,6 @@ public class GameManager {
 
     private void StartGameLoop() {
         BukkitScheduler scheduler = Bukkit.getScheduler();
-        boolean borderHasShrunk = false;
-        int timeToBorder = Main.plugin.getConfig().getInt("secondsToShrink");
         scheduler.scheduleSyncRepeatingTask(Main.plugin, () -> {
 
             // runs every second
