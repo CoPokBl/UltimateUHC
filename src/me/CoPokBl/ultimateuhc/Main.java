@@ -1,5 +1,3 @@
-// This is a version of the plugin designed for 1.8.x in hope that it will work with 1.9+ as well
-
 package me.CoPokBl.ultimateuhc;
 
 import me.CoPokBl.ultimateuhc.Commands.NonTabCommands;
@@ -44,8 +42,6 @@ public class Main extends JavaPlugin {
 		saveDefaultConfig();
 
 		// set config values
-		gameManager.TimeToPvp = getConfig().getInt("secondsToPvp");
-		gameManager.TimeToMeetup = getConfig().getInt("secondsToMeetup");
 		gameManager.WorldName = getConfig().getString("worldName");
 		List<String> scenarios = getConfig().getStringList("enabledScenarios");
 		for (String scenario : scenarios) {
