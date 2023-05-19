@@ -1,6 +1,7 @@
 package me.CoPokBl.ultimateuhc.ScenarioClasses;
 
 import me.CoPokBl.ultimateuhc.Interfaces.ScenarioListener;
+import me.CoPokBl.ultimateuhc.Main;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -36,7 +37,7 @@ public class Stacked extends ScenarioListener {
         ItemStack diam = new ItemStack(Material.DIAMOND, dia);
         ItemStack iron = new ItemStack(Material.IRON_INGOT, iro);
         ItemStack gold = new ItemStack(Material.GOLD_INGOT, gol);
-        ItemStack wood = new ItemStack(Material.LOG, woo);
+        ItemStack wood = new ItemStack(Material.valueOf(Main.SpigotVersion > 12 ? "OAK_LOG" : "LOG"), woo);
         ItemStack appl = new ItemStack(Material.APPLE, apl);
         ItemStack lapi = new ItemStack(Material.LAPIS_ORE, lap);
         ItemStack obsi = new ItemStack(Material.OBSIDIAN, obs);

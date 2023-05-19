@@ -168,7 +168,7 @@ public class GameManager {
         Bukkit.broadcastMessage(ChatColor.GREEN + winner.getDisplayName() + " has won the UHC!!!!");
         NMSHandler.getInstance().nms.sendTitle(winner, ChatColor.GREEN + "You Have Won The UHC!", "", 10, 20*3, 10);
         for (Player online : Bukkit.getOnlinePlayers()) {
-            online.playSound(online.getLocation(), Sound.ENDERDRAGON_DEATH, 1, 1);
+            online.playSound(online.getLocation(), Sound.valueOf(Main.SpigotVersion > 12 ? "ENTITY_ENDER_DRAGON_GROWL" : "ENDERDRAGON_GROWL"), 1, 1);
         }
         if (Main.plugin.getConfig().getBoolean("restartServerOnCompletion")) {
             int secondsToRestart = Main.plugin.getConfig().getInt("restartServerTime");

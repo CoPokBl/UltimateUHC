@@ -3,7 +3,7 @@ package me.CoPokBl.ultimateuhc.NMS.Versions;
 import me.CoPokBl.ultimateuhc.NMS.NMSVersion;
 import org.bukkit.GameRule;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_16_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_17_R1.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer;
 import org.bukkit.entity.LivingEntity;
