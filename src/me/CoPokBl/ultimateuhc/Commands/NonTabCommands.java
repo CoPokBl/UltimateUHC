@@ -9,13 +9,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import static me.CoPokBl.ultimateuhc.Main.gameManager;
 import static me.CoPokBl.ultimateuhc.Main.scoreboardManager;
-import static me.CoPokBl.ultimateuhc.Utils.GetRandomNum;
 
 public class NonTabCommands implements CommandExecutor {
 
@@ -181,9 +177,14 @@ public class NonTabCommands implements CommandExecutor {
                 sender.sendMessage(ChatColor.RED + "You Don't Have Permission To Do That!");
                 return true;
             }
-            sender.sendMessage(ChatColor.RED + "This command is deprecated and no longer works");
-            sender.sendMessage(ChatColor.RED + "Use /uhcaddtime " + (gameManager.TimeToPvp - gameManager.gameLoopTimer) +
-                    " to increase the game time and trigger PvP");
+            boolean enabled;
+            try {
+                enabled = Boolean.parseBoolean(args[0]);
+            } catch (Exception e) {
+                sender.sendMessage(ChatColor.RED + "Usage: /uhcpvp <true/false>");
+                return true;
+            }
+            gameManager.PvpEnabled = enabled;
             return true;
         }
 
@@ -198,7 +199,7 @@ public class NonTabCommands implements CommandExecutor {
 
         if (label.equalsIgnoreCase("uhcinfo")) {
             sender.sendMessage(
-                    ChatColor.GOLD + "" + ChatColor.BOLD + "UHC info:");
+                    ChatColor.GOLD + String.valueOf(ChatColor.BOLD) + "UHC info:");
             sender.sendMessage(
                     ChatColor.GOLD + "You will join and get teleported to a random location with the effects slowness, blindness, mining fatigue and resistance.");
             sender.sendMessage(

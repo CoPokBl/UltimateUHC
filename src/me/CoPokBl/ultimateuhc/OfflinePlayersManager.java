@@ -6,20 +6,18 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.VillagerAcquireTradeEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-import org.bukkit.util.Vector;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -110,10 +108,9 @@ public class OfflinePlayersManager implements Listener {
 
         // make entity livingentity
         LivingEntity entityLiving = (LivingEntity) entity;
-        entityLiving.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 999999, 999999));
         entityLiving.setRemoveWhenFarAway(false);
         entityLiving.setHealth(event.getPlayer().getHealth());
-        entityLiving.setCanPickupItems(false);
+        NMSHandler.getInstance().nms.setMobAi(entityLiving, false);
 
         gameManager.OfflinePlayerEntities.put(event.getPlayer().getUniqueId().toString(), entityLiving);
 

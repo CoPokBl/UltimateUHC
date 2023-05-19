@@ -1,13 +1,13 @@
 package me.CoPokBl.ultimateuhc.NMS;
 
-import me.CoPokBl.ultimateuhc.Interfaces.EntityHandler;
-import me.CoPokBl.ultimateuhc.NMS.EntityHandlers.EntityHandler1_17;
-import me.CoPokBl.ultimateuhc.NMS.EntityHandlers.EntityHandler1_8;
+import me.CoPokBl.ultimateuhc.NMS.Versions.Version16;
+import me.CoPokBl.ultimateuhc.NMS.Versions.Version17;
+import me.CoPokBl.ultimateuhc.NMS.Versions.Version8;
 
 public class NMSHandler {
 
     private static NMSHandler instance;
-    public EntityHandler entityHandler;
+    public NMSVersion nms;
 
     public static NMSHandler getInstance() {
         if (instance == null) {
@@ -18,8 +18,9 @@ public class NMSHandler {
 
     public void Init(int version) throws IllegalArgumentException {
         switch (version) {
-            case 8 -> entityHandler = new EntityHandler1_8();
-            case 17 -> entityHandler = new EntityHandler1_17();
+            case 8 -> nms = new Version8();
+            case 16 -> nms = new Version16();
+            case 17 -> nms = new Version17();
             default -> throw new IllegalArgumentException("Version not supported");
         }
     }

@@ -4,6 +4,7 @@ import me.CoPokBl.ultimateuhc.EventListeners.WorldProtections;
 import me.CoPokBl.ultimateuhc.Interfaces.Scenario;
 import me.CoPokBl.ultimateuhc.Interfaces.UhcEvent;
 import me.CoPokBl.ultimateuhc.Interfaces.UhcEventType;
+import me.CoPokBl.ultimateuhc.NMS.NMSHandler;
 import me.CoPokBl.ultimateuhc.OverrideTypes.UhcPlayer;
 import org.bukkit.*;
 import org.bukkit.entity.LivingEntity;
@@ -110,8 +111,6 @@ public class GameManager {
 
         if (!InGame) { WorldProtections.NoInteract.add(p); }
         // else Game is running
-
-
     }
 
     public void SetupPlayer(Player p) {
@@ -140,8 +139,10 @@ public class GameManager {
                          "If this error persists, contact CoPokBl#9451 on Discord.");
             return;
         }
-        uhc.setGameRuleValue("naturalRegeneration", "false");
-        // uhc.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true); This isn't a thing in 1.8
+        NMSHandler.getInstance().nms.setGameRule(uhc, me.CoPokBl.ultimateuhc.OverrideTypes.GameRule.NATURAL_REGENERATION, false);
+        if (Main.SpigotVersion >= 15) {
+            NMSHandler.getInstance().nms.setGameRule(uhc, me.CoPokBl.ultimateuhc.OverrideTypes.GameRule.IMMEDIATE_RESPAWN, true);
+        }
         uhc.getWorldBorder().setCenter(new Location(uhc, 0, 100, 0));
         uhc.getWorldBorder().setSize(Main.plugin.getConfig().getInt("worldBorderSize"));
         for (Player online : Bukkit.getOnlinePlayers()) {
@@ -149,7 +150,7 @@ public class GameManager {
             online.setFoodLevel(20);
 
             // display title to all players
-            online.sendTitle(ChatColor.GREEN + "The UHC Has Begun!", ChatColor.GREEN + "");
+            NMSHandler.getInstance().nms.sendTitle(online, ChatColor.GREEN + "The UHC Has Begun!", String.valueOf(ChatColor.GREEN), 10, 20*3, 10);
         }
         WorldProtections.NoInteract.clear();  // Allow players to interact
         StartGameLoop();  // Start the game
@@ -165,7 +166,10 @@ public class GameManager {
         // run win
         final Player winner = gameManager.AlivePlayers.get(0).getPlayer();
         Bukkit.broadcastMessage(ChatColor.GREEN + winner.getDisplayName() + " has won the UHC!!!!");
-        winner.sendTitle(ChatColor.RED + "You Have Won The UHC!", "");
+        NMSHandler.getInstance().nms.sendTitle(winner, ChatColor.GREEN + "You Have Won The UHC!", "", 10, 20*3, 10);
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            online.playSound(online.getLocation(), Sound.ENDERDRAGON_DEATH, 1, 1);
+        }
         if (Main.plugin.getConfig().getBoolean("restartServerOnCompletion")) {
             int secondsToRestart = Main.plugin.getConfig().getInt("restartServerTime");
             gameManager.ShutdownOnGameEndTaskId = Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, () ->
@@ -186,8 +190,6 @@ public class GameManager {
 
     private void StartGameLoop() {
         BukkitScheduler scheduler = Bukkit.getScheduler();
-        boolean borderHasShrunk = false;
-        int timeToBorder = Main.plugin.getConfig().getInt("secondsToShrink");
         scheduler.scheduleSyncRepeatingTask(Main.plugin, () -> {
 
             // runs every second
@@ -233,7 +235,7 @@ public class GameManager {
                 }
                 if (runTitle) {
                     for (Player player : Bukkit.getOnlinePlayers()) {
-                        player.sendTitle(title, subtitle);
+                        NMSHandler.getInstance().nms.sendTitle(player, title, subtitle, 10, 20*3, 10);
                     }
                 }
                 if (event.command != null) {

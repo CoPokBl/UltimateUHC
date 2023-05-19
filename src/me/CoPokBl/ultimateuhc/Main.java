@@ -19,10 +19,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class Main extends JavaPlugin {
 	public static int SpigotVersion;
@@ -156,9 +153,12 @@ public class Main extends JavaPlugin {
 			getLogger().info("A UHC world exists");
 		}
 		String seedConfigValue = getConfig().getString("worldSeed");
+		String[] seedsConfigValue = getConfig().getStringList("worldSeeds").toArray(new String[0]);
 		WorldCreator wc = new WorldCreator(gameManager.WorldName);
 		if (seedConfigValue != null && !Objects.equals(seedConfigValue, "null")) {
 			wc.seed(Long.parseLong(seedConfigValue));
+		} else if (seedsConfigValue.length > 0) {
+			wc.seed(Long.parseLong(seedsConfigValue[new Random().nextInt(seedsConfigValue.length)]));
 		}
 		wc.environment(World.Environment.valueOf(getConfig().getString("worldEnvironment")));
 		wc.type(WorldType.valueOf(getConfig().getString("worldType")));
