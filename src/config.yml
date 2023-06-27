@@ -107,3 +107,35 @@ giveBook: true
 # Invalid options are ignored
 enabledScenarios:
   - none
+
+# -------------------------------------------------- #
+#                      Rewards                       #
+# -------------------------------------------------- #
+
+# The commands to run upon certain events
+# Placeholders:
+#   %player% - The player's name
+#   %player_id% - The player's UUID
+#   %players_remaining% - The number of players remaining
+#   %players_total% - The total number of players
+#   %dead_players% - The number of dead players
+rewards:
+  # Triggered on the player who wins the game
+  gameWin:
+    - 'give %player% diamond 1'
+
+  # Triggered on all players except the winner when the game is won
+  gameLose:
+    - 'give %player% dirt 1'
+
+  # Triggered whenever a player is killed by another player, it is triggered on the killer
+  kill:
+    - 'give %player% diamond 1'
+
+  # Triggered whenever a player dies for any reason, it is triggered on the player who died
+  death:
+    - 'give %player% dirt 1'
+
+  # Triggered on everyone when the game finishes, regardless of whether they won or not
+  gameFinish:
+    - 'give %player% dirt 1'

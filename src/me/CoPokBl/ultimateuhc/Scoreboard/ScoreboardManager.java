@@ -1,7 +1,6 @@
 package me.CoPokBl.ultimateuhc.Scoreboard;
 
 import me.CoPokBl.ultimateuhc.Main;
-import me.CoPokBl.ultimateuhc.OverrideTypes.UhcPlayer;
 import me.CoPokBl.ultimateuhc.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -60,7 +59,7 @@ public class ScoreboardManager {
         Score border = obj.getScore(ChatColor.YELLOW + "WorldBorder: " + (int) player.getWorld().getWorldBorder().getSize());
         border.setScore(6);
         // elapsed
-        Score meetupStatus = obj.getScore(ChatColor.YELLOW + "Time Elapsed: " + Utils.GetTime(Main.gameManager.gameLoopTimer));
+        Score meetupStatus = obj.getScore(ChatColor.YELLOW + "Time Elapsed: " + Utils.GetTime(Main.gameManager.GameLoopTimer));
         meetupStatus.setScore(4);
         // next event
         String nextEventText;
@@ -70,7 +69,7 @@ public class ScoreboardManager {
             if (Main.gameManager.NextEvent == null) {
                 nextEventText = "No More Events";
             } else {
-                nextEventText = Main.gameManager.NextEvent.name + " in " + Utils.GetTime(Main.gameManager.NextEvent.time - Main.gameManager.gameLoopTimer) + " seconds";
+                nextEventText = Main.gameManager.NextEvent.name + " in " + Utils.GetTime(Main.gameManager.NextEvent.time - Main.gameManager.GameLoopTimer) + " seconds";
             }
         }
         Score pvpStatus = obj.getScore(ChatColor.YELLOW + nextEventText);

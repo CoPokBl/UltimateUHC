@@ -1,5 +1,6 @@
 package me.CoPokBl.ultimateuhc;
 
+import me.CoPokBl.ultimateuhc.Interfaces.RewardType;
 import me.CoPokBl.ultimateuhc.NMS.NMSHandler;
 import me.CoPokBl.ultimateuhc.OverrideTypes.UhcPlayer;
 import org.bukkit.Bukkit;
@@ -154,7 +155,6 @@ public class OfflinePlayersManager implements Listener {
 
     @EventHandler
     public void onEntityDeath(EntityDeathEvent e) {
-
         if (!Main.plugin.getConfig().getBoolean("allowRejoin") &&
                 !(Main.plugin.getConfig().getBoolean("allowLateJoin") && !gameManager.PvpEnabled)) {
             return;
@@ -188,6 +188,7 @@ public class OfflinePlayersManager implements Listener {
             deathMessage = p.getName() + " died.";
         } else {
             deathMessage = p.getName() + " was slain by " + e.getEntity().getKiller().getName();
+            gameManager.ExecuteReward(e.getEntity().getKiller(), RewardType.kill);
         }
 
         Kill(p, deathMessage);
@@ -201,6 +202,7 @@ public class OfflinePlayersManager implements Listener {
         World uhc = Bukkit.getWorld(Main.gameManager.WorldName);
         Utils.RemovePlayerFromAlive(p);
         gameManager.DeadPlayers.add(p);
+        gameManager.ExecuteReward(p.getPlayer(), RewardType.death);
 
         Location loc = gameManager.OfflinePlayerLocations.get(p.getUUID().toString());
         if (loc == null) { Bukkit.getLogger().severe("Location doesn't exist, what the hell happened?"); return; }

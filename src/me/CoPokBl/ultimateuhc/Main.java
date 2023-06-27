@@ -109,11 +109,7 @@ public class Main extends JavaPlugin {
 		// Get spigot version
 		SpigotVersion = Utils.GetVersion();
 		Bukkit.getLogger().info("Spigot version: " + SpigotVersion);
-		try {
-			NMSHandler.getInstance().Init(SpigotVersion);  // Init NMS
-		} catch (IllegalArgumentException e) {
-			getLogger().severe("Failed to load NMS. Unsupported version: 1." + SpigotVersion);
-		}
+		NMSHandler.getInstance().Init(SpigotVersion);  // Init NMS
 
 		// register commands
 		this.getCommand("uhcscenario").setExecutor(new Scenarios());

@@ -1,12 +1,14 @@
 package me.CoPokBl.ultimateuhc;
 
 import me.CoPokBl.ultimateuhc.EventListeners.WorldProtections;
+import me.CoPokBl.ultimateuhc.Interfaces.RewardType;
 import me.CoPokBl.ultimateuhc.Interfaces.Scenario;
 import me.CoPokBl.ultimateuhc.Interfaces.UhcEvent;
 import me.CoPokBl.ultimateuhc.Interfaces.UhcEventType;
 import me.CoPokBl.ultimateuhc.NMS.NMSHandler;
 import me.CoPokBl.ultimateuhc.OverrideTypes.UhcPlayer;
 import org.bukkit.*;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -25,6 +27,7 @@ import static me.CoPokBl.ultimateuhc.Main.scoreboardManager;
 public class GameManager {
     public final List<UhcPlayer> AlivePlayers = new CopyOnWriteArrayList<>();
     public final List<UhcPlayer> DeadPlayers = new ArrayList<>();
+    public final List<UhcPlayer> Participants = new ArrayList<>();
     public final HashMap<String, ItemStack[]> OfflinePlayerInventories = new HashMap<>();  // UUID, items
     public final HashMap<String, Location> OfflinePlayerLocations = new HashMap<>();  // UUID, items
     public final HashMap<String, LivingEntity> OfflinePlayerEntities = new HashMap<>();  // UUID, entity
@@ -32,7 +35,7 @@ public class GameManager {
     public Boolean PvpEnabled = false;
     public Boolean InGame = false;
     public Boolean MeetupEnabled = false;
-    public int gameLoopTimer = 0;
+    public int GameLoopTimer = 0;
     public String WorldName;
     public Integer ShutdownOnGameEndTaskId = null;
     public OfflinePlayersManager OfflinePlayersManager = new OfflinePlayersManager();
@@ -70,6 +73,7 @@ public class GameManager {
 
     private void JoinPlayerToGame(Player p) {
         AlivePlayers.add(new UhcPlayer(p.getUniqueId()));
+        Participants.add(new UhcPlayer(p.getUniqueId()));
 
         // Get the UHC world
         World uhc = Bukkit.getWorld(WorldName);
@@ -125,6 +129,28 @@ public class GameManager {
         p.getInventory().addItem(book);
     }
 
+    public void ExecuteReward(Player p, RewardType type) {
+        ConfigurationSection rewards = Main.plugin.getConfig().getConfigurationSection("rewards");
+        if (rewards == null) {
+            Bukkit.getLogger().warning("Rewards are null.");
+            return;
+        }
+        List<String> commands = rewards.getStringList(type.toString());
+        if (commands == null) {
+            Bukkit.getLogger().warning("Reward type " + type + " is null.");
+            return;
+        }
+        for (String command : commands) {
+            command = command
+                    .replace("%player%", p.getName())
+                    .replace("%player_id%", p.getUniqueId().toString())
+                    .replace("%players_remaining%", String.valueOf(AlivePlayers.size()))
+                    .replace("%players_total%", String.valueOf(Participants.size()))
+                    .replace("%dead_players%", String.valueOf(DeadPlayers.size()));
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+        }
+    }
+
 
     public void StartUhc() {
         for (UhcPlayer online : AlivePlayers) {
@@ -169,6 +195,12 @@ public class GameManager {
         NMSHandler.getInstance().nms.sendTitle(winner, ChatColor.GREEN + "You Have Won The UHC!", "", 10, 20*3, 10);
         for (Player online : Bukkit.getOnlinePlayers()) {
             online.playSound(online.getLocation(), Sound.valueOf(Main.SpigotVersion > 12 ? "ENTITY_ENDER_DRAGON_GROWL" : "ENDERDRAGON_GROWL"), 1, 1);
+            gameManager.ExecuteReward(online, RewardType.gameFinished);
+            if (online.getUniqueId() == winner.getUniqueId()) {
+                gameManager.ExecuteReward(online, RewardType.gameWin);
+            } else {
+                gameManager.ExecuteReward(online, RewardType.gameLose);
+            }
         }
         if (Main.plugin.getConfig().getBoolean("restartServerOnCompletion")) {
             int secondsToRestart = Main.plugin.getConfig().getInt("restartServerTime");
@@ -193,7 +225,7 @@ public class GameManager {
         scheduler.scheduleSyncRepeatingTask(Main.plugin, () -> {
 
             // runs every second
-            gameLoopTimer++;
+            GameLoopTimer++;
 
             // events
             World uhc = Bukkit.getWorld(WorldName);
@@ -214,10 +246,10 @@ public class GameManager {
                 } else {
                     currentNextEventTime = nextEvent.time;
                 }
-                if (event.time - gameLoopTimer < currentNextEventTime) {
+                if (event.time - GameLoopTimer < currentNextEventTime) {
                     nextEvent = event;
                 }
-                if (event.time > gameLoopTimer) continue;
+                if (event.time > GameLoopTimer) continue;
                 // run the event
                 if (event.message != null) {
                     Bukkit.broadcastMessage(t(event.message));

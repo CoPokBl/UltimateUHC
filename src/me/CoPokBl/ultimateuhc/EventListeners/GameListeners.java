@@ -1,9 +1,10 @@
 package me.CoPokBl.ultimateuhc.EventListeners;
 
+import me.CoPokBl.ultimateuhc.Interfaces.RewardType;
 import me.CoPokBl.ultimateuhc.Main;
 import me.CoPokBl.ultimateuhc.OverrideTypes.UhcPlayer;
-import me.CoPokBl.ultimateuhc.Scoreboard.MainBoard;
 import me.CoPokBl.ultimateuhc.ScenarioClasses.Zombies;
+import me.CoPokBl.ultimateuhc.Scoreboard.MainBoard;
 import me.CoPokBl.ultimateuhc.Utils;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -16,7 +17,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -81,7 +81,7 @@ public class GameListeners implements Listener {
     public void onPlayerDeath(PlayerDeathEvent e) {
         gameManager.AlivePlayers.remove(new UhcPlayer(e.getEntity().getPlayer()));
         Utils.RemovePlayerFromAlive(e.getEntity().getPlayer());
-        gameManager.WinCheck();
+        gameManager.DeadPlayers.add(new UhcPlayer(e.getEntity().getPlayer()));
         Player p = e.getEntity().getPlayer();
         p.getWorld().strikeLightningEffect(p.getLocation());
 
@@ -94,6 +94,11 @@ public class GameListeners implements Listener {
         // Drop the head
         World world = p.getWorld();
         world.dropItemNaturally(p.getLocation(), head);
+
+        if (p.getKiller() != null) {
+            gameManager.ExecuteReward(p.getKiller(), RewardType.kill);
+        }
+        gameManager.ExecuteReward(p, RewardType.death);
 
         gameManager.WinCheck();
     }

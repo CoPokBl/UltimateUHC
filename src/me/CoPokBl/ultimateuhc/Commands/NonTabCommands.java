@@ -10,6 +10,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Objects;
+
 import static me.CoPokBl.ultimateuhc.Main.gameManager;
 import static me.CoPokBl.ultimateuhc.Main.scoreboardManager;
 
@@ -31,7 +33,7 @@ public class NonTabCommands implements CommandExecutor {
                 return true;
             }
             Player p = (Player) sender;
-            if (gameManager.AlivePlayers.contains(new UhcPlayer(p))) {
+            if (gameManager.AlivePlayers.stream().anyMatch(uhcPlayer -> Objects.equals(uhcPlayer.getUUID().toString(), p.getUniqueId().toString()))) {
                 p.sendMessage(ChatColor.RED + "You Are Already In The Game!");
                 return true;
             }
@@ -85,7 +87,7 @@ public class NonTabCommands implements CommandExecutor {
                 return false;
             }
             try {
-                gameManager.gameLoopTimer += Integer.parseInt(args[0]);
+                gameManager.GameLoopTimer += Integer.parseInt(args[0]);
             } catch (Exception e) {
                 sender.sendMessage(ChatColor.RED + "Invalid Number!");
                 return false;
