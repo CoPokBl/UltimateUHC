@@ -2,6 +2,7 @@ package me.CoPokBl.ultimateuhc.NMS;
 
 import me.CoPokBl.ultimateuhc.NMS.Versions.Version16;
 import me.CoPokBl.ultimateuhc.NMS.Versions.Version17;
+import me.CoPokBl.ultimateuhc.NMS.Versions.Version21;
 import me.CoPokBl.ultimateuhc.NMS.Versions.Version8;
 import org.bukkit.Bukkit;
 
@@ -22,6 +23,7 @@ public class NMSHandler {
             case 8 -> nms = new Version8();
             case 16 -> nms = new Version16();
             case 17 -> nms = new Version17();
+            case 21 -> nms = new Version21();
             default -> {
                 Bukkit.getLogger().severe("Version not supported!");
                 Bukkit.getLogger().severe("Using closest version...");
